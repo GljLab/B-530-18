@@ -182,7 +182,7 @@ const loadData = async () => {
       cooperationStatus: searchForm.cooperationStatus
     })
     if (res.code === 200) {
-      tableData.value = res.data?.records || []
+      tableData.value = res.data?.list || []
       pagination.total = res.data?.total || 0
     }
   } catch {

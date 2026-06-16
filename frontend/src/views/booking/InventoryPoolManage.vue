@@ -269,11 +269,14 @@ const loadRoomTypes = async () => {
 const loadPoolData = async () => {
   if (!selectedRoomType.value) return
   const { year, month } = getYearMonth()
+  const startDate = `${year}-${String(month).padStart(2, '0')}-01`
+  const lastDay = new Date(year, month, 0).getDate()
+  const endDate = `${year}-${String(month).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`
   try {
-    const res = await api.inventory.poolAll({
+    const res = await api.inventory.poolList({
       roomTypeId: selectedRoomType.value,
-      year,
-      month
+      startDate,
+      endDate
     })
     const dataMap = {}
     if (res.code === 200 && res.data) {

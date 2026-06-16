@@ -22,7 +22,7 @@
       </div>
 
       <el-table :data="strategyList" stripe border v-loading="tableLoading" style="width: 100%">
-        <el-table-column prop="roomTypeName" label="房型名称" min-width="140" />
+        <el-table-column prop="typeName" label="房型名称" min-width="140" />
         <el-table-column prop="totalRooms" label="总房量" width="100" align="center" />
         <el-table-column label="超售开关" width="120" align="center">
           <template #default="{ row }">
@@ -62,7 +62,7 @@
     <el-dialog v-model="editDialogVisible" title="编辑超售策略" width="480px" destroy-on-close>
       <el-form ref="editFormRef" :model="editForm" :rules="editRules" label-width="100px">
         <el-form-item label="房型名称">
-          <span>{{ editForm.roomTypeName }}</span>
+          <span>{{ editForm.typeName }}</span>
         </el-form-item>
         <el-form-item label="超售开关" prop="overbookingEnabled">
           <el-switch v-model="editForm.overbookingEnabled" />
@@ -107,7 +107,7 @@ const editSaving = ref(false)
 const editFormRef = ref(null)
 const editForm = reactive({
   roomTypeId: null,
-  roomTypeName: '',
+  typeName: '',
   totalRooms: 0,
   availableRooms: 0,
   overbookingEnabled: false,
@@ -132,7 +132,7 @@ const loadGlobalSwitch = async () => {
 
 const handleGlobalSwitch = async (val) => {
   try {
-    const res = await api.overbooking.updateGlobal({ enabled: val })
+    const res = await api.overbooking.updateGlobal({ enabled: val ? 1 : 0 })
     if (res.code === 200) {
       ElMessage.success(val ? '全局超售已开启' : '全局超售已关闭')
     } else {
@@ -152,8 +152,8 @@ const loadStrategies = async () => {
     if (res.code === 200) {
       strategyList.value = (res.data || []).map(item => ({
         ...item,
-        overbookingEnabled: !!item.overbookingEnabled,
-        overbookingRatio: item.overbookingRatio || 0
+        overbookingEnabled: !!item.enabled,
+        overbookingRatio: item.overbookingRatio != null ? Math.round(item.overbookingRatio * 100) : 0
       }))
     }
   } catch {
@@ -165,7 +165,7 @@ const loadStrategies = async () => {
 
 const handleEditRow = (row) => {
   editForm.roomTypeId = row.roomTypeId
-  editForm.roomTypeName = row.roomTypeName
+  editForm.typeName = row.typeName
   editForm.totalRooms = row.totalRooms
   editForm.availableRooms = row.availableRooms ?? row.totalRooms
   editForm.overbookingEnabled = row.overbookingEnabled
@@ -178,8 +178,8 @@ const handleEditSave = async () => {
   try {
     const res = await api.overbooking.save({
       roomTypeId: editForm.roomTypeId,
-      overbookingEnabled: editForm.overbookingEnabled,
-      overbookingRatio: editForm.overbookingRatio
+      enabled: editForm.overbookingEnabled ? 1 : 0,
+      overbookingRatio: (editForm.overbookingRatio || 0) / 100
     })
     if (res.code === 200) {
       ElMessage.success('保存成功')
@@ -198,18 +198,19 @@ const handleEditSave = async () => {
 const handleSaveAll = async () => {
   saveLoading.value = true
   try {
-    const items = strategyList.value.map(row => ({
-      roomTypeId: row.roomTypeId,
-      overbookingEnabled: row.overbookingEnabled,
-      overbookingRatio: row.overbookingRatio
-    }))
-    const res = await api.overbooking.save(items)
-    if (res.code === 200) {
-      ElMessage.success('保存成功')
-      await loadStrategies()
-    } else {
-      ElMessage.error(res.message || '保存失败')
+    for (const row of strategyList.value) {
+      const res = await api.overbooking.save({
+        roomTypeId: row.roomTypeId,
+        enabled: row.overbookingEnabled ? 1 : 0,
+        overbookingRatio: (row.overbookingRatio || 0) / 100
+      })
+      if (res.code !== 200) {
+        ElMessage.error(res.message || '保存失败')
+        return
+      }
     }
+    ElMessage.success('保存成功')
+    await loadStrategies()
   } catch {
     ElMessage.error('保存失败')
   } finally {

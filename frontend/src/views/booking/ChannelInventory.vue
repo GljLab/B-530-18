@@ -38,8 +38,8 @@
             <template v-if="cell.date">
               <div class="day-header">
                 <span class="day-number" :class="{ today: cell.isToday }">{{ cell.day }}</span>
-                <span v-if="cell.shareMode" class="share-badge" :class="cell.shareMode === '独占' ? 'exclusive' : 'shared'">
-                  {{ cell.shareMode }}
+                <span v-if="cell.shareMode" class="share-badge" :class="cell.shareMode === 2 ? 'exclusive' : 'shared'">
+                  {{ cell.shareMode === 2 ? '独占' : '共享' }}
                 </span>
               </div>
               <div class="day-stats">
@@ -77,11 +77,11 @@
       </div>
       <div class="legend-item">
         <span class="share-badge exclusive">独占</span>
-        <span>独占模式</span>
+        <span>独占模式(2)</span>
       </div>
       <div class="legend-item">
         <span class="share-badge shared">共享</span>
-        <span>共享模式</span>
+        <span>共享模式(1)</span>
       </div>
     </div>
 
@@ -95,8 +95,8 @@
         </el-form-item>
         <el-form-item label="共享模式" prop="shareMode">
           <el-select v-model="editForm.shareMode" style="width: 100%">
-            <el-option label="独占" value="独占" />
-            <el-option label="共享" value="共享" />
+            <el-option label="独占" :value="2" />
+            <el-option label="共享" :value="1" />
           </el-select>
         </el-form-item>
       </el-form>
@@ -124,8 +124,8 @@
         </el-form-item>
         <el-form-item label="共享模式" prop="shareMode">
           <el-select v-model="batchForm.shareMode" style="width: 100%">
-            <el-option label="独占" value="独占" />
-            <el-option label="共享" value="共享" />
+            <el-option label="独占" :value="2" />
+            <el-option label="共享" :value="1" />
           </el-select>
         </el-form-item>
       </el-form>
@@ -159,7 +159,7 @@ const editForm = reactive({
   channelId: null,
   roomTypeId: null,
   allocatedRooms: 0,
-  shareMode: '共享'
+  shareMode: 1
 })
 const editRules = {
   allocatedRooms: [{ required: true, message: '请输入分配房量', trigger: 'blur' }],
@@ -172,7 +172,7 @@ const batchFormRef = ref(null)
 const batchForm = reactive({
   dateRange: [],
   allocatedRooms: 0,
-  shareMode: '共享'
+  shareMode: 1
 })
 const batchRules = {
   dateRange: [{ required: true, message: '请选择日期范围', trigger: 'change' }],
@@ -286,12 +286,15 @@ const loadRoomTypes = async () => {
 const loadInventory = async () => {
   if (!selectedChannel.value || !selectedRoomType.value) return
   const { year, month } = getYearMonth()
+  const startDate = `${year}-${String(month).padStart(2, '0')}-01`
+  const lastDay = new Date(year, month, 0).getDate()
+  const endDate = `${year}-${String(month).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`
   try {
     const res = await api.channel.inventory({
       channelId: selectedChannel.value,
       roomTypeId: selectedRoomType.value,
-      year,
-      month
+      startDate,
+      endDate
     })
     const dataMap = {}
     if (res.code === 200 && res.data) {
@@ -311,7 +314,7 @@ const openEditDialog = (cell) => {
   editForm.channelId = selectedChannel.value
   editForm.roomTypeId = selectedRoomType.value
   editForm.allocatedRooms = cell.allocatedRooms
-  editForm.shareMode = cell.shareMode || '共享'
+  editForm.shareMode = cell.shareMode || 1
   editDialogVisible.value = true
 }
 
@@ -321,9 +324,10 @@ const handleEditSave = async () => {
   editSaving.value = true
   try {
     const res = await api.channel.inventorySet({
-      date: editForm.date,
       channelId: editForm.channelId,
       roomTypeId: editForm.roomTypeId,
+      startDate: editForm.date,
+      endDate: editForm.date,
       allocatedRooms: editForm.allocatedRooms,
       shareMode: editForm.shareMode
     })
@@ -344,7 +348,7 @@ const handleEditSave = async () => {
 const openBatchDialog = () => {
   batchForm.dateRange = []
   batchForm.allocatedRooms = 0
-  batchForm.shareMode = '共享'
+  batchForm.shareMode = 1
   batchDialogVisible.value = true
 }
 

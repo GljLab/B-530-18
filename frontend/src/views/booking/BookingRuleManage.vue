@@ -28,7 +28,7 @@
 
     <el-card shadow="hover" class="table-card">
       <el-table :data="tableData" stripe border v-loading="tableLoading" style="width: 100%">
-        <el-table-column prop="name" label="规则名称" min-width="140" />
+        <el-table-column prop="ruleName" label="规则名称" min-width="140" />
         <el-table-column label="规则类型" width="140" align="center">
           <template #default="{ row }">
             {{ getRuleTypeLabel(row.ruleType) }}
@@ -45,12 +45,12 @@
         </el-table-column>
         <el-table-column label="适用房型" width="160">
           <template #default="{ row }">
-            <span>{{ formatRoomTypes(row.applicableRoomTypes) }}</span>
+            <span>{{ formatRoomTypes(row.applyRoomTypes) }}</span>
           </template>
         </el-table-column>
         <el-table-column label="适用日期" width="200">
           <template #default="{ row }">
-            <span>{{ formatDateRange(row.applicableDateRange) }}</span>
+            <span>{{ row.applyDateStart && row.applyDateEnd ? `${row.applyDateStart} 至 ${row.applyDateEnd}` : '全部' }}</span>
           </template>
         </el-table-column>
         <el-table-column label="操作" width="160" align="center" fixed="right">
@@ -228,9 +228,11 @@ const getRuleTypeLabel = (type) => {
 }
 
 const formatRoomTypes = (ids) => {
-  if (!ids || !Array.isArray(ids) || ids.length === 0) return '全部'
-  const names = ids.map(id => {
-    const rt = roomTypes.value.find(r => r.id === id)
+  if (!ids) return '全部'
+  const idArr = typeof ids === 'string' ? ids.split(',') : (Array.isArray(ids) ? ids : [])
+  if (idArr.length === 0) return '全部'
+  const names = idArr.map(id => {
+    const rt = roomTypes.value.find(r => String(r.id) === String(id))
     return rt ? rt.typeName : id
   })
   return names.join('、')
@@ -308,41 +310,58 @@ const openCreateDialog = () => {
 const openEditDialog = (row) => {
   isEdit.value = true
   form.id = row.id
-  form.name = row.name || ''
+  form.name = row.ruleName || ''
   form.ruleType = row.ruleType
-  form.minDays = row.minDays ?? 1
-  form.maxDays = row.maxDays ?? 30
-  form.advanceDays = row.advanceDays ?? 0
-  form.latestTime = row.latestTime || ''
-  form.restrictedDates = row.restrictedDates || []
-  form.restrictedRoomTypes = row.restrictedRoomTypes || []
-  form.allowedCustomerTypes = row.allowedCustomerTypes || []
+  const params = parseRuleParamsStr(row.ruleParams)
+  form.minDays = params.minDays ?? 1
+  form.maxDays = params.maxDays ?? 30
+  form.advanceDays = params.advanceDays ?? 0
+  form.latestTime = params.latestTime || ''
+  form.restrictedDates = params.restrictedDates ? params.restrictedDates.split(',') : []
+  form.restrictedRoomTypes = params.restrictedRoomTypes ? params.restrictedRoomTypes.split(',').map(Number) : []
+  form.allowedCustomerTypes = params.allowedCustomerTypes ? params.allowedCustomerTypes.split(',') : []
   form.priority = row.priority ?? 10
-  form.applicableRoomTypes = row.applicableRoomTypes || []
-  form.applicableDateRange = row.applicableDateRange || []
-  form.applicableSources = row.applicableSources || []
+  form.applicableRoomTypes = row.applyRoomTypes ? row.applyRoomTypes.split(',').map(Number) : []
+  form.applicableDateRange = row.applyDateStart && row.applyDateEnd ? [row.applyDateStart, row.applyDateEnd] : []
+  form.applicableSources = row.applySources ? row.applySources.split(',') : []
   form.description = row.description || ''
   dialogVisible.value = true
 }
 
+const parseRuleParamsStr = (ruleParams) => {
+  if (!ruleParams) return {}
+  try {
+    return JSON.parse(ruleParams)
+  } catch {
+    return {}
+  }
+}
+
 const buildPayload = () => {
   const payload = {
-    name: form.name,
+    ruleName: form.name,
     ruleType: form.ruleType,
     priority: form.priority,
-    applicableRoomTypes: form.applicableRoomTypes,
-    applicableDateRange: form.applicableDateRange,
-    applicableSources: form.applicableSources,
-    description: form.description
+    applyRoomTypes: Array.isArray(form.applicableRoomTypes) ? form.applicableRoomTypes.join(',') : '',
+    applySources: Array.isArray(form.applicableSources) ? form.applicableSources.join(',') : '',
+    description: form.description,
+    enabled: 1
   }
 
-  if (form.ruleType === 1) payload.minDays = form.minDays
-  if (form.ruleType === 2) payload.maxDays = form.maxDays
-  if (form.ruleType === 3) payload.advanceDays = form.advanceDays
-  if (form.ruleType === 4) payload.latestTime = form.latestTime
-  if (form.ruleType === 5) payload.restrictedDates = form.restrictedDates
-  if (form.ruleType === 6) payload.restrictedRoomTypes = form.restrictedRoomTypes
-  if (form.ruleType === 7) payload.allowedCustomerTypes = form.allowedCustomerTypes
+  const ruleParams = {}
+  if (form.ruleType === 1) ruleParams.minDays = form.minDays
+  if (form.ruleType === 2) ruleParams.maxDays = form.maxDays
+  if (form.ruleType === 3) ruleParams.advanceDays = form.advanceDays
+  if (form.ruleType === 4) ruleParams.latestTime = form.latestTime
+  if (form.ruleType === 5) ruleParams.restrictedDates = Array.isArray(form.restrictedDates) ? form.restrictedDates.join(',') : ''
+  if (form.ruleType === 6) ruleParams.restrictedRoomTypes = Array.isArray(form.restrictedRoomTypes) ? form.restrictedRoomTypes.join(',') : ''
+  if (form.ruleType === 7) ruleParams.allowedCustomerTypes = Array.isArray(form.allowedCustomerTypes) ? form.allowedCustomerTypes.join(',') : ''
+  payload.ruleParams = JSON.stringify(ruleParams)
+
+  if (Array.isArray(form.applicableDateRange) && form.applicableDateRange.length === 2) {
+    payload.applyDateStart = form.applicableDateRange[0]
+    payload.applyDateEnd = form.applicableDateRange[1]
+  }
 
   if (isEdit.value) payload.id = form.id
 
@@ -374,7 +393,7 @@ const handleSave = async () => {
 
 const handleToggle = async (row, val) => {
   try {
-    const res = await api.bookingRule.toggle(row.id, { enabled: val })
+    const res = await api.bookingRule.toggle(row.id, { enabled: val ? 1 : 0 })
     if (res.code === 200) {
       ElMessage.success(val ? '已启用' : '已禁用')
       await loadData()
@@ -388,7 +407,7 @@ const handleToggle = async (row, val) => {
 
 const handleDelete = async (row) => {
   try {
-    await ElMessageBox.confirm(`确认删除规则「${row.name}」？`, '提示', { type: 'warning' })
+    await ElMessageBox.confirm(`确认删除规则「${row.ruleName}」？`, '提示', { type: 'warning' })
     const res = await api.bookingRule.delete(row.id)
     if (res.code === 200) {
       ElMessage.success('删除成功')
