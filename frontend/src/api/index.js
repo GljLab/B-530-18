@@ -383,6 +383,70 @@ const api = {
     get: (id) => request.get(`/refund/${id}`),
     approve: (id, data) => request.put(`/refund/${id}/approve`, data),
     process: (id, data) => request.put(`/refund/${id}/process`, data)
+  },
+
+  inventory: {
+    poolList: (params) => request.get('/inventory/pool/list', { params }),
+    poolAll: (params) => request.get('/inventory/pool/all', { params }),
+    poolSet: (data) => request.post('/inventory/pool/set', data),
+    poolBatch: (data) => request.post('/inventory/pool/batch', data),
+    monitor: (params) => request.get('/inventory/monitor', { params }),
+    monitorExport: (data) => request.post('/inventory/monitor/export', data, { responseType: 'blob' })
+  },
+
+  overbooking: {
+    global: () => request.get('/overbooking/global'),
+    updateGlobal: (data) => request.put('/overbooking/global', data),
+    list: () => request.get('/overbooking/list'),
+    getByRoomType: (roomTypeId) => request.get(`/overbooking/${roomTypeId}`),
+    save: (data) => request.post('/overbooking/save', data),
+    maxSalable: (params) => request.get('/overbooking/maxSalable', { params }),
+    alert: (params) => request.get('/overbooking/alert', { params })
+  },
+
+  bookingRule: {
+    page: (params) => request.get('/bookingRule/page', { params }),
+    get: (id) => request.get(`/bookingRule/${id}`),
+    add: (data) => request.post('/bookingRule', data),
+    update: (data) => request.put('/bookingRule', data),
+    delete: (id) => request.delete(`/bookingRule/${id}`),
+    toggle: (id, data) => request.put(`/bookingRule/${id}/toggle`, data),
+    validate: (data) => request.post('/bookingRule/validate', data),
+    exempt: (data) => request.post('/bookingRule/exempt', data),
+    exemptions: (bookingId) => request.get(`/bookingRule/exemption/${bookingId}`),
+    validationLogs: (bookingId) => request.get(`/bookingRule/validationLog/${bookingId}`)
+  },
+
+  channel: {
+    page: (params) => request.get('/channel/page', { params }),
+    get: (id) => request.get(`/channel/${id}`),
+    list: () => request.get('/channel/list'),
+    add: (data) => request.post('/channel', data),
+    update: (data) => request.put('/channel', data),
+    delete: (id) => request.delete(`/channel/${id}`),
+    inventory: (params) => request.get('/channel/inventory', { params }),
+    inventorySet: (data) => request.post('/channel/inventory/set', data),
+    inventoryBatch: (data) => request.post('/channel/inventory/batch', data),
+    price: (params) => request.get('/channel/price', { params }),
+    priceSet: (data) => request.post('/channel/price/set', data),
+    priceCalculate: (params) => request.get('/channel/price/calculate', { params }),
+    statistics: (params) => request.get('/channel/statistics', { params }),
+    trend: (params) => request.get('/channel/statistics/trend', { params }),
+    efficiency: (params) => request.get('/channel/statistics/efficiency', { params })
+  },
+
+  analytics: {
+    occupancy: (params) => request.get('/analytics/occupancy', { params }),
+    bookingCycle: (params) => request.get('/analytics/bookingCycle', { params }),
+    customerBehavior: (params) => request.get('/analytics/customerBehavior', { params }),
+    revenue: (params) => request.get('/analytics/revenue', { params }),
+    export: (data) => request.post('/analytics/export', data, { responseType: 'blob' })
+  },
+
+  visual: {
+    roomStatus: (params) => request.get('/visual/roomStatus', { params }),
+    gantt: (params) => request.get('/visual/gantt', { params }),
+    inventoryCompare: (params) => request.get('/visual/inventoryCompare', { params })
   }
 }
 

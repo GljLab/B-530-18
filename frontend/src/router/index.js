@@ -231,6 +231,96 @@ const routes = [
         name: 'RefundManage',
         component: () => import('@/views/booking/RefundManage.vue'),
         meta: { title: '退款管理', icon: 'Money', permission: 'booking:refund:approve' }
+      },
+      {
+        path: 'inventory/pool',
+        name: 'InventoryPoolManage',
+        component: () => import('@/views/booking/InventoryPoolManage.vue'),
+        meta: { title: '房量池管理', icon: 'Calendar', permission: 'inventory:pool:list' }
+      },
+      {
+        path: 'inventory/overbooking',
+        name: 'OverbookingStrategy',
+        component: () => import('@/views/booking/OverbookingStrategy.vue'),
+        meta: { title: '超售策略', icon: 'Warning', permission: 'inventory:overbooking:list' }
+      },
+      {
+        path: 'inventory/monitor',
+        name: 'InventoryMonitor',
+        component: () => import('@/views/booking/InventoryMonitor.vue'),
+        meta: { title: '房量监控', icon: 'Monitor', permission: 'inventory:monitor:list' }
+      },
+      {
+        path: 'inventory/rules',
+        name: 'BookingRuleManage',
+        component: () => import('@/views/booking/BookingRuleManage.vue'),
+        meta: { title: '预订规则', icon: 'SetUp', permission: 'inventory:rule:list' }
+      },
+      {
+        path: 'channel/list',
+        name: 'ChannelManage',
+        component: () => import('@/views/booking/ChannelManage.vue'),
+        meta: { title: '渠道列表', icon: 'List', permission: 'channel:list' }
+      },
+      {
+        path: 'channel/inventory',
+        name: 'ChannelInventory',
+        component: () => import('@/views/booking/ChannelInventory.vue'),
+        meta: { title: '渠道房量', icon: 'Grid', permission: 'channel:inventory:list' }
+      },
+      {
+        path: 'channel/price',
+        name: 'ChannelPrice',
+        component: () => import('@/views/booking/ChannelPrice.vue'),
+        meta: { title: '渠道价格', icon: 'Money', permission: 'channel:price:list' }
+      },
+      {
+        path: 'channel/statistics',
+        name: 'ChannelStats',
+        component: () => import('@/views/booking/ChannelStats.vue'),
+        meta: { title: '渠道统计', icon: 'DataLine', permission: 'channel:statistics:list' }
+      },
+      {
+        path: 'analytics/occupancy',
+        name: 'OccupancyAnalysis',
+        component: () => import('@/views/booking/OccupancyAnalysis.vue'),
+        meta: { title: '入住率分析', icon: 'DataAnalysis', permission: 'analytics:occupancy:list' }
+      },
+      {
+        path: 'analytics/bookingCycle',
+        name: 'BookingCycleAnalysis',
+        component: () => import('@/views/booking/BookingCycleAnalysis.vue'),
+        meta: { title: '预订周期', icon: 'Timer', permission: 'analytics:cycle:list' }
+      },
+      {
+        path: 'analytics/customerBehavior',
+        name: 'CustomerBehaviorAnalysis',
+        component: () => import('@/views/booking/CustomerBehaviorAnalysis.vue'),
+        meta: { title: '客户行为', icon: 'User', permission: 'analytics:behavior:list' }
+      },
+      {
+        path: 'analytics/revenue',
+        name: 'RevenueAnalysis',
+        component: () => import('@/views/booking/RevenueAnalysis.vue'),
+        meta: { title: '营收分析', icon: 'Coin', permission: 'analytics:revenue:list' }
+      },
+      {
+        path: 'visual/roomStatus',
+        name: 'RoomStatusCalendar',
+        component: () => import('@/views/booking/RoomStatusCalendar.vue'),
+        meta: { title: '房态日历', icon: 'Calendar', permission: 'visual:roomStatus:list' }
+      },
+      {
+        path: 'visual/gantt',
+        name: 'BookingGantt',
+        component: () => import('@/views/booking/BookingGantt.vue'),
+        meta: { title: '预订甘特图', icon: 'Histogram', permission: 'visual:gantt:list' }
+      },
+      {
+        path: 'visual/inventoryCompare',
+        name: 'InventoryCompareCalendar',
+        component: () => import('@/views/booking/InventoryCompareCalendar.vue'),
+        meta: { title: '房量对比', icon: 'DataLine', permission: 'visual:compare:list' }
       }
     ]
   },

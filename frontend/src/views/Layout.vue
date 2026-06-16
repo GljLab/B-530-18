@@ -179,6 +179,109 @@
             <span>预订日历</span>
           </el-menu-item>
         </el-sub-menu>
+
+        <el-sub-menu index="/inventory" v-if="hasInventoryPermission">
+          <template #title>
+            <el-icon><Grid /></el-icon>
+            <span>房量与规则</span>
+          </template>
+
+          <el-menu-item index="/inventory/pool" v-if="hasPermission('inventory:pool:list')">
+            <el-icon><Calendar /></el-icon>
+            <span>房量池管理</span>
+          </el-menu-item>
+
+          <el-menu-item index="/inventory/overbooking" v-if="hasPermission('inventory:overbooking:list')">
+            <el-icon><Warning /></el-icon>
+            <span>超售策略</span>
+          </el-menu-item>
+
+          <el-menu-item index="/inventory/monitor" v-if="hasPermission('inventory:monitor:list')">
+            <el-icon><Monitor /></el-icon>
+            <span>房量监控</span>
+          </el-menu-item>
+
+          <el-menu-item index="/inventory/rules" v-if="hasPermission('inventory:rule:list')">
+            <el-icon><SetUp /></el-icon>
+            <span>预订规则</span>
+          </el-menu-item>
+        </el-sub-menu>
+
+        <el-sub-menu index="/channel" v-if="hasChannelPermission">
+          <template #title>
+            <el-icon><Share /></el-icon>
+            <span>渠道管理</span>
+          </template>
+
+          <el-menu-item index="/channel/list" v-if="hasPermission('channel:list')">
+            <el-icon><List /></el-icon>
+            <span>渠道列表</span>
+          </el-menu-item>
+
+          <el-menu-item index="/channel/inventory" v-if="hasPermission('channel:inventory:list')">
+            <el-icon><Grid /></el-icon>
+            <span>渠道房量</span>
+          </el-menu-item>
+
+          <el-menu-item index="/channel/price" v-if="hasPermission('channel:price:list')">
+            <el-icon><Money /></el-icon>
+            <span>渠道价格</span>
+          </el-menu-item>
+
+          <el-menu-item index="/channel/statistics" v-if="hasPermission('channel:statistics:list')">
+            <el-icon><DataLine /></el-icon>
+            <span>渠道统计</span>
+          </el-menu-item>
+        </el-sub-menu>
+
+        <el-sub-menu index="/analytics" v-if="hasAnalyticsPermission">
+          <template #title>
+            <el-icon><TrendCharts /></el-icon>
+            <span>高级分析</span>
+          </template>
+
+          <el-menu-item index="/analytics/occupancy" v-if="hasPermission('analytics:occupancy:list')">
+            <el-icon><DataAnalysis /></el-icon>
+            <span>入住率分析</span>
+          </el-menu-item>
+
+          <el-menu-item index="/analytics/bookingCycle" v-if="hasPermission('analytics:cycle:list')">
+            <el-icon><Timer /></el-icon>
+            <span>预订周期</span>
+          </el-menu-item>
+
+          <el-menu-item index="/analytics/customerBehavior" v-if="hasPermission('analytics:behavior:list')">
+            <el-icon><User /></el-icon>
+            <span>客户行为</span>
+          </el-menu-item>
+
+          <el-menu-item index="/analytics/revenue" v-if="hasPermission('analytics:revenue:list')">
+            <el-icon><Coin /></el-icon>
+            <span>营收分析</span>
+          </el-menu-item>
+        </el-sub-menu>
+
+        <el-sub-menu index="/visual" v-if="hasVisualPermission">
+          <template #title>
+            <el-icon><Calendar /></el-icon>
+            <span>可视化日历</span>
+          </template>
+
+          <el-menu-item index="/visual/roomStatus" v-if="hasPermission('visual:roomStatus:list')">
+            <el-icon><Calendar /></el-icon>
+            <span>房态日历</span>
+          </el-menu-item>
+
+          <el-menu-item index="/visual/gantt" v-if="hasPermission('visual:gantt:list')">
+            <el-icon><Histogram /></el-icon>
+            <span>预订甘特图</span>
+          </el-menu-item>
+
+          <el-menu-item index="/visual/inventoryCompare" v-if="hasPermission('visual:compare:list')">
+            <el-icon><DataLine /></el-icon>
+            <span>房量对比</span>
+          </el-menu-item>
+        </el-sub-menu>
       </el-menu>
     </el-aside>
     
@@ -245,7 +348,8 @@ import {
   House, OfficeBuilding, School, Tickets, Key, DataAnalysis,
   Tools, Document, Edit, Clock, DataLine,
   UserFilled, Plus, PriceTag, Warning, Checked, CopyDocument, Upload,
-  Calendar, Search, EditPen
+  Calendar, Search, EditPen, Grid, Monitor, SetUp, Share, List, Money,
+  TrendCharts, Timer, Coin, Histogram
 } from '@element-plus/icons-vue'
 
 const route = useRoute()
@@ -298,6 +402,33 @@ const hasBookingPermission = computed(() => {
          hasPermission('booking:list') ||
          hasPermission('booking:statistics:list') ||
          hasPermission('booking:calendar:view')
+})
+
+const hasInventoryPermission = computed(() => {
+  return hasPermission('inventory:pool:list') ||
+         hasPermission('inventory:overbooking:list') ||
+         hasPermission('inventory:monitor:list') ||
+         hasPermission('inventory:rule:list')
+})
+
+const hasChannelPermission = computed(() => {
+  return hasPermission('channel:list') ||
+         hasPermission('channel:inventory:list') ||
+         hasPermission('channel:price:list') ||
+         hasPermission('channel:statistics:list')
+})
+
+const hasAnalyticsPermission = computed(() => {
+  return hasPermission('analytics:occupancy:list') ||
+         hasPermission('analytics:cycle:list') ||
+         hasPermission('analytics:behavior:list') ||
+         hasPermission('analytics:revenue:list')
+})
+
+const hasVisualPermission = computed(() => {
+  return hasPermission('visual:roomStatus:list') ||
+         hasPermission('visual:gantt:list') ||
+         hasPermission('visual:compare:list')
 })
 
 const toggleCollapse = () => {
