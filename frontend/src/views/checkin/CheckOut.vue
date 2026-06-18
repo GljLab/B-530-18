@@ -348,6 +348,8 @@ const checkoutForm = reactive({
   discount: 0,
   paidAmount: 0,
   paymentMethod: 1,
+  voucherNo: '',
+  depositMethod: 1,
   returnedKeyCards: 0,
   remark: ''
 })
@@ -495,21 +497,16 @@ const handleCheckout = async () => {
   try {
     const data = {
       checkInId: checkInId.value,
-      roomFee: checkoutForm.roomFee,
-      extraBedFee: checkoutForm.extraBedFee,
-      otherFee: checkoutForm.otherFee,
-      damageFee: checkoutForm.damageFee,
-      discount: checkoutForm.discount,
-      paidAmount: checkoutForm.paidAmount,
       paymentMethod: checkoutForm.paymentMethod,
-      returnedKeyCards: checkoutForm.returnedKeyCards,
-      lostKeyCards: (checkIn.value.keyCardCount || 0) - checkoutForm.returnedKeyCards,
-      useDepositDeduction: useDepositDeduction ? 1 : 0,
-      roomInspected: roomInspectionEnabled.value ? 1 : 0,
-      inspectionResult: roomInspectionEnabled.value ? inspectionForm.result : null,
-      damagedItems: inspectionForm.damagedItems || null,
+      paymentVoucherNo: checkoutForm.voucherNo || '',
+      depositMethod: checkoutForm.depositMethod || 1,
+      keyCardReturned: checkoutForm.returnedKeyCards,
+      keyCardLost: (checkIn.value.keyCardCount || 0) - checkoutForm.returnedKeyCards,
+      roomChecked: roomInspectionEnabled.value ? 1 : 0,
+      roomCheckResult: roomInspectionEnabled.value ? inspectionForm.result : null,
+      damageItems: inspectionForm.damagedItems || null,
       damageDescription: inspectionForm.damageDescription || null,
-      compensationAmount: inspectionForm.compensationAmount || 0,
+      damageCompensation: inspectionForm.compensationAmount || 0,
       remark: checkoutForm.remark
     }
 

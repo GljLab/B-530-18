@@ -205,7 +205,7 @@
             <el-divider content-position="left">同住人</el-divider>
             <div v-for="(guest, index) in step3Form.roommates" :key="index" class="guest-item">
               <el-row :gutter="24">
-                <el-col :span="10">
+                <el-col :span="8">
                   <el-form-item
                     :label="`同住人${index + 1}姓名`"
                     :prop="`roommates.${index}.name`"
@@ -214,7 +214,22 @@
                     <el-input v-model="guest.name" placeholder="请输入姓名" maxlength="50" />
                   </el-form-item>
                 </el-col>
-                <el-col :span="10">
+                <el-col :span="6">
+                  <el-form-item
+                    label="证件类型"
+                    :prop="`roommates.${index}.idType`"
+                    :rules="guestIdTypeRules"
+                  >
+                    <el-select v-model="guest.idType" placeholder="请选择" style="width: 100%">
+                      <el-option label="身份证" value="1" />
+                      <el-option label="护照" value="2" />
+                      <el-option label="港澳通行证" value="3" />
+                      <el-option label="台胞证" value="4" />
+                      <el-option label="其他" value="5" />
+                    </el-select>
+                  </el-form-item>
+                </el-col>
+                <el-col :span="8">
                   <el-form-item
                     label="证件号"
                     :prop="`roommates.${index}.idNumber`"
@@ -223,7 +238,7 @@
                     <el-input v-model="guest.idNumber" placeholder="请输入证件号" maxlength="30" />
                   </el-form-item>
                 </el-col>
-                <el-col :span="4">
+                <el-col :span="2">
                   <el-button
                     type="danger"
                     text
@@ -547,6 +562,7 @@ const step4Rules = {
 }
 
 const guestNameRules = [{ required: true, message: '请输入姓名', trigger: 'blur' }]
+const guestIdTypeRules = [{ required: false, message: '请选择证件类型', trigger: 'change' }]
 const guestIdRules = [{ required: false, message: '请输入证件号', trigger: 'blur' }]
 
 const stayDays = computed(() => {
@@ -628,7 +644,7 @@ const handleSelectRoom = (room) => {
 }
 
 const addRoommate = () => {
-  step3Form.roommates.push({ name: '', idNumber: '' })
+  step3Form.roommates.push({ name: '', idType: '1', idNumber: '' })
 }
 
 const removeRoommate = (index) => {

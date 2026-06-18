@@ -4,11 +4,14 @@ import com.example.permission.common.PageResult;
 import com.example.permission.common.Result;
 import com.example.permission.entity.*;
 import com.example.permission.service.CheckInService;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -19,11 +22,41 @@ public class CheckInController {
     @Autowired
     private CheckInService checkInService;
 
+    private List<CheckInGuest> convertGuests(Object guestsObj) {
+        List<CheckInGuest> guests = new ArrayList<>();
+        if (guestsObj == null) {
+            return guests;
+        }
+        if (guestsObj instanceof List) {
+            List<?> list = (List<?>) guestsObj;
+            for (Object item : list) {
+                if (item instanceof Map) {
+                    Map<String, Object> map = (Map<String, Object>) item;
+                    CheckInGuest guest = new CheckInGuest();
+                    if (map.get("isMain") != null) {
+                        guest.setIsMain(Integer.valueOf(map.get("isMain").toString()));
+                    }
+                    guest.setName(map.get("name") != null ? map.get("name").toString() : null);
+                    guest.setPhone(map.get("phone") != null ? map.get("phone").toString() : null);
+                    if (map.get("gender") != null) {
+                        guest.setGender(Integer.valueOf(map.get("gender").toString()));
+                    }
+                    if (map.get("idType") != null) {
+                        guest.setIdType(Integer.valueOf(map.get("idType").toString()));
+                    }
+                    guest.setIdNumber(map.get("idNumber") != null ? map.get("idNumber").toString() : null);
+                    guests.add(guest);
+                }
+            }
+        }
+        return guests;
+    }
+
     @PostMapping("/fromBooking")
     public Result<CheckIn> checkInFromBooking(@RequestBody Map<String, Object> params) {
         Long bookingId = Long.valueOf(params.get("bookingId").toString());
         Long roomId = Long.valueOf(params.get("roomId").toString());
-        List<CheckInGuest> guests = (List<CheckInGuest>) params.get("guests");
+        List<CheckInGuest> guests = convertGuests(params.get("guests"));
         BigDecimal depositAmount = params.get("depositAmount") != null ? new BigDecimal(params.get("depositAmount").toString()) : BigDecimal.ZERO;
         Integer depositMethod = params.get("depositMethod") != null ? Integer.valueOf(params.get("depositMethod").toString()) : 1;
         String depositVoucherNo = params.get("depositVoucherNo") != null ? params.get("depositVoucherNo").toString() : null;
@@ -41,7 +74,7 @@ public class CheckInController {
         Long roomTypeId = Long.valueOf(params.get("roomTypeId").toString());
         Long roomId = Long.valueOf(params.get("roomId").toString());
         Map<String, Object> customerMap = (Map<String, Object>) params.get("customer");
-        List<CheckInGuest> guests = (List<CheckInGuest>) params.get("guests");
+        List<CheckInGuest> guests = convertGuests(params.get("guests"));
         LocalDate checkInDate = params.get("checkInDate") != null ? LocalDate.parse(params.get("checkInDate").toString()) : null;
         LocalDate checkOutDate = params.get("checkOutDate") != null ? LocalDate.parse(params.get("checkOutDate").toString()) : null;
         BigDecimal depositAmount = params.get("depositAmount") != null ? new BigDecimal(params.get("depositAmount").toString()) : BigDecimal.ZERO;

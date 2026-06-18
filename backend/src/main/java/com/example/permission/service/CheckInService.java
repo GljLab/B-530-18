@@ -160,11 +160,8 @@ public class CheckInService {
             if (!StringUtils.hasText(guest.getName())) {
                 throw new BusinessException("入住人姓名不能为空");
             }
-            if (guest.getIdType() == null) {
-                throw new BusinessException("请选择证件类型");
-            }
-            if (!StringUtils.hasText(guest.getIdNumber())) {
-                throw new BusinessException("证件号码不能为空");
+            if (StringUtils.hasText(guest.getIdNumber()) && guest.getIdType() == null) {
+                throw new BusinessException("填写证件号时请选择证件类型");
             }
         }
 
@@ -315,11 +312,8 @@ public class CheckInService {
             if (!StringUtils.hasText(guest.getName())) {
                 throw new BusinessException("入住人姓名不能为空");
             }
-            if (guest.getIdType() == null) {
-                throw new BusinessException("请选择证件类型");
-            }
-            if (!StringUtils.hasText(guest.getIdNumber())) {
-                throw new BusinessException("证件号码不能为空");
+            if (StringUtils.hasText(guest.getIdNumber()) && guest.getIdType() == null) {
+                throw new BusinessException("填写证件号时请选择证件类型");
             }
         }
 
