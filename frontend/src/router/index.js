@@ -321,6 +321,42 @@ const routes = [
         name: 'InventoryCompareCalendar',
         component: () => import('@/views/booking/InventoryCompareCalendar.vue'),
         meta: { title: '房量对比', icon: 'DataLine', permission: 'visual:compare:list' }
+      },
+      {
+        path: 'checkin/list',
+        name: 'CheckInList',
+        component: () => import('@/views/checkin/CheckInList.vue'),
+        meta: { title: '入住单管理', icon: 'Document', permission: 'checkin:list' }
+      },
+      {
+        path: 'checkin/create',
+        name: 'CheckInCreate',
+        component: () => import('@/views/checkin/CheckInCreate.vue'),
+        meta: { title: '办理入住', icon: 'Plus', permission: 'checkin:create' }
+      },
+      {
+        path: 'checkin/walkin',
+        name: 'WalkInCreate',
+        component: () => import('@/views/checkin/WalkInCreate.vue'),
+        meta: { title: '散客入住', icon: 'User', permission: 'checkin:walkin' }
+      },
+      {
+        path: 'checkin/checkout',
+        name: 'CheckOutPage',
+        component: () => import('@/views/checkin/CheckOut.vue'),
+        meta: { title: '办理退房', icon: 'SwitchButton', permission: 'checkin:checkout' }
+      },
+      {
+        path: 'checkin/detail/:id',
+        name: 'CheckInDetail',
+        component: () => import('@/views/checkin/CheckInDetail.vue'),
+        meta: { title: '入住单详情', icon: 'Document', permission: 'checkin:query', hidden: true }
+      },
+      {
+        path: 'checkin/statistics',
+        name: 'CheckInStatistics',
+        component: () => import('@/views/checkin/CheckInStatistics.vue'),
+        meta: { title: '入住统计', icon: 'DataLine', permission: 'checkin:statistics:list' }
       }
     ]
   },

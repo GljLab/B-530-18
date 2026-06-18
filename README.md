@@ -2,7 +2,7 @@
 
 ## 项目简介
 
-基于 **Spring Boot + MyBatis-Flex + Vue + JWT + MySQL** 的智慧酒店管理平台，在权限管理系统基础上扩展实现酒店基础架构管理和预订管理，包括酒店信息、楼栋楼层、房型分类、客房管理、客户档案、预订管理等核心功能模块。打通从房源查询、预订创建到入住退房的完整业务链路。
+基于 **Spring Boot + MyBatis-Flex + Vue + JWT + MySQL** 的智慧酒店管理平台，在权限管理系统基础上扩展实现酒店基础架构管理、预订管理、入住退房管理，包括酒店信息、楼栋楼层、房型分类、客房管理、客户档案、预订管理、入住登记、换房续住、费用结算等核心功能模块。打通从房源查询、预订创建、入住登记到退房结算的完整业务链路。
 
 > [!NOTE]
 > **技术说明**: 原始需求中的 "mybatis-flux" 为笔误，实际采用的是 **MyBatis-Flex** 技术栈。MyBatis-Flex 是一个优雅的 MyBatis 增强框架，提供了更简洁的 API 和更好的性能。
@@ -127,7 +127,7 @@ docker compose logs -f
 ├── backend/          # 后端 Spring Boot 项目
 │   ├── src/main/java/com/example/permission/
 │   │   ├── config/      # 配置类
-│   │   ├── controller/  # 控制器（系统+酒店）
+│   │   ├── controller/  # 控制器（系统+酒店+入住）
 │   │   ├── entity/      # 实体类
 │   │   ├── mapper/      # MyBatis-Flex Mapper
 │   │   ├── service/     # 服务层
@@ -139,6 +139,8 @@ docker compose logs -f
 │   │   ├── views/       # 页面组件
 │   │   │   ├── system/      # 系统管理页面
 │   │   │   ├── hotel/       # 酒店管理页面
+│   │   │   ├── booking/     # 预订管理页面
+│   │   │   ├── checkin/     # 入住退房页面
 │   │   │   └── maintenance/ # 维护管理页面
 │   │   ├── router/      # 路由配置
 │   │   ├── stores/      # 状态管理
@@ -146,7 +148,9 @@ docker compose logs -f
 │   └── package.json
 ├── db/               # 数据库脚本
 │   ├── init.sql      # 初始化脚本（含酒店表和权限数据）
-│   └── migration_20260616_booking_system.sql  # 预订管理系统迁移脚本
+│   ├── migration_20260615_customer.sql  # 客户管理系统
+│   ├── migration_20260616_booking_system.sql  # 预订管理系统
+│   └── migration_20260617_checkin_system.sql  # 入住退房管理系统
 └── docker-compose.yml
 ```
 

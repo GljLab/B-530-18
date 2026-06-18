@@ -447,6 +447,39 @@ const api = {
     roomStatus: (params) => request.get('/visual/roomStatus', { params }),
     gantt: (params) => request.get('/visual/gantt', { params }),
     inventoryCompare: (params) => request.get('/visual/inventoryCompare', { params })
+  },
+
+  checkin: {
+    list: (params) => request.get('/checkin/list', { params }),
+    get: (id) => request.get(`/checkin/${id}`),
+    checkInFromBooking: (data) => request.post('/checkin/fromBooking', data),
+    walkInCheckIn: (data) => request.post('/checkin/walkin', data),
+    changeRoom: (data) => request.post('/checkin/changeRoom', data),
+    extendStay: (data) => request.post('/checkin/extend', data),
+    checkout: (data) => request.post('/checkin/checkout', data),
+    getCheckoutRecord: (id) => request.get(`/checkin/checkout/${id}`),
+    getCheckoutByCheckIn: (checkInId) => request.get(`/checkin/checkout/byCheckIn/${checkInId}`),
+    availableRoomsForChange: (checkInId, roomTypeId) => request.get('/checkin/availableRooms/change', { params: { checkInId, roomTypeId } }),
+    availableRoomsForWalkIn: (params) => request.get('/checkin/availableRooms/walkin', { params }),
+    addConsumption: (data) => request.post('/checkin/consumption', data),
+    updateDeposit: (data) => request.put('/checkin/deposit', data),
+    changeRecords: (checkInId) => request.get(`/checkin/changeRecords/${checkInId}`),
+    extendRecords: (checkInId) => request.get(`/checkin/extendRecords/${checkInId}`),
+    todayStats: () => request.get('/checkin/todayStats'),
+    updateOverdue: () => request.post('/checkin/updateOverdue'),
+
+    statistics: {
+      overview: () => request.get('/checkin/statistics/overview'),
+      trend: (days) => request.get('/checkin/statistics/trend', { params: { days } }),
+      roomType: () => request.get('/checkin/statistics/roomType'),
+      floor: () => request.get('/checkin/statistics/floor'),
+      source: () => request.get('/checkin/statistics/source'),
+      customerType: () => request.get('/checkin/statistics/customerType'),
+      averageStay: () => request.get('/checkin/statistics/averageStay'),
+      revenue: (days) => request.get('/checkin/statistics/revenue', { params: { days } }),
+      region: () => request.get('/checkin/statistics/region'),
+      occupancyRate: (days) => request.get('/checkin/statistics/occupancyRate', { params: { days } })
+    }
   }
 }
 
