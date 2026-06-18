@@ -137,6 +137,10 @@ const getProgressColor = (percentage) => {
 }
 
 const loadData = async () => {
+  if (!searchForm.dateRange || searchForm.dateRange.length < 2) {
+    ElMessage.warning('请选择日期范围后再查询')
+    return
+  }
   loading.value = true
   try {
     const params = {}
@@ -163,6 +167,10 @@ const loadData = async () => {
 }
 
 const handleExport = async () => {
+  if (!searchForm.dateRange || searchForm.dateRange.length < 2) {
+    ElMessage.warning('请选择日期范围后再导出')
+    return
+  }
   try {
     const params = {}
     if (searchForm.dateRange && searchForm.dateRange.length === 2) {
@@ -192,7 +200,6 @@ const handleExport = async () => {
 }
 
 onMounted(() => {
-  loadData()
 })
 </script>
 

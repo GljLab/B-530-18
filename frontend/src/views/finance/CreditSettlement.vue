@@ -19,7 +19,7 @@
             <el-option
               v-for="item in agreementUnitList"
               :key="item.id"
-              :label="item.name"
+              :label="item.unitName"
               :value="item.id"
             />
           </el-select>
@@ -181,7 +181,11 @@
       <el-table v-loading="recordsLoading" :data="recordsList" border style="width: 100%">
         <el-table-column prop="settlementNo" label="结算单号" min-width="160" />
         <el-table-column prop="agreementUnitName" label="协议单位" min-width="140" />
-        <el-table-column prop="settlementPeriod" label="结算周期" min-width="200" />
+        <el-table-column label="结算周期" min-width="200">
+          <template #default="{ row }">
+            {{ row.periodStart && row.periodEnd ? `${row.periodStart} 至 ${row.periodEnd}` : '-' }}
+          </template>
+        </el-table-column>
         <el-table-column prop="billCount" label="账单数量" min-width="90" align="center" />
         <el-table-column prop="totalAmount" label="结算总额" min-width="120" align="right">
           <template #default="{ row }">
@@ -294,7 +298,7 @@ const loadAgreementUnits = async () => {
   try {
     const res = await api.finance.agreementUnit.list()
     if (res.code === 200) {
-      agreementUnitList.value = res.data?.records || res.data?.list || res.data || []
+      agreementUnitList.value = Array.isArray(res.data) ? res.data : (res.data?.list || [])
     }
   } catch {
     agreementUnitList.value = []
@@ -314,12 +318,12 @@ const handleQueryBills = async () => {
   try {
     const params = {
       agreementUnitId: queryForm.agreementUnitId,
-      startDate: queryForm.dateRange[0],
-      endDate: queryForm.dateRange[1]
+      periodStart: queryForm.dateRange[0],
+      periodEnd: queryForm.dateRange[1]
     }
     const res = await api.finance.creditSettlement.bills(params)
     if (res.code === 200) {
-      billsList.value = res.data?.records || res.data?.list || res.data || []
+      billsList.value = Array.isArray(res.data) ? res.data : (res.data?.list || [])
     } else {
       ElMessage.error(res.message || '查询失败')
     }
@@ -337,8 +341,10 @@ const handleSelectionChange = (selection) => {
 const handleOpenCreateDialog = () => {
   const unit = agreementUnitList.value.find(u => u.id === queryForm.agreementUnitId)
   createForm.agreementUnitId = queryForm.agreementUnitId
-  createForm.agreementUnitName = unit?.name || ''
+  createForm.agreementUnitName = unit?.unitName || ''
   createForm.settlementPeriod = queryForm.dateRange ? `${queryForm.dateRange[0]} 至 ${queryForm.dateRange[1]}` : ''
+  createForm.periodStart = queryForm.dateRange ? queryForm.dateRange[0] : ''
+  createForm.periodEnd = queryForm.dateRange ? queryForm.dateRange[1] : ''
   createForm.billCount = selectedBills.value.length
   createForm.totalAmount = selectedTotalAmount.value
   createForm.settlementMethod = null
@@ -357,8 +363,8 @@ const handleCreateSettlement = async () => {
     const payload = {
       agreementUnitId: createForm.agreementUnitId,
       agreementUnitName: createForm.agreementUnitName,
-      startDate: queryForm.dateRange?.[0],
-      endDate: queryForm.dateRange?.[1],
+      periodStart: queryForm.dateRange?.[0],
+      periodEnd: queryForm.dateRange?.[1],
       billIds: selectedBills.value.map(b => b.id || b.billId),
       billCount: createForm.billCount,
       totalAmount: createForm.totalAmount,
@@ -394,7 +400,7 @@ const loadRecords = async () => {
     const res = await api.finance.creditSettlement.page(params)
     if (res.code === 200) {
       const data = res.data
-      recordsList.value = data?.records || data?.list || []
+      recordsList.value = data?.list || []
       recordsPagination.total = data?.total || 0
     }
   } catch {

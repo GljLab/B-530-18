@@ -111,6 +111,15 @@
 
     <el-dialog v-model="createDialogVisible" title="创建交接班" width="700px" destroy-on-close>
       <el-form ref="createFormRef" :model="createForm" :rules="createRules" label-width="140px">
+        <el-form-item label="交接班日期" prop="shiftDate">
+          <el-date-picker
+            v-model="createForm.shiftDate"
+            type="date"
+            placeholder="请选择交接班日期"
+            value-format="YYYY-MM-DD"
+            style="width: 100%"
+          />
+        </el-form-item>
         <el-form-item label="班次" prop="shiftType">
           <el-select v-model="createForm.shiftType" placeholder="请选择班次" style="width: 100%">
             <el-option label="早班" :value="1" />
@@ -218,9 +227,9 @@
           </el-descriptions>
         </div>
 
-        <div v-if="takeoverRecord.remark" style="margin-bottom: 16px">
+        <div v-if="takeoverRecord.handoverRemark" style="margin-bottom: 16px">
           <el-descriptions :column="1" border>
-            <el-descriptions-item label="交班备注">{{ takeoverRecord.remark }}</el-descriptions-item>
+            <el-descriptions-item label="交班备注">{{ takeoverRecord.handoverRemark }}</el-descriptions-item>
           </el-descriptions>
         </div>
 
@@ -306,9 +315,9 @@
           </el-descriptions>
         </template>
 
-        <template v-if="detailRecord.remark">
+        <template v-if="detailRecord.handoverRemark">
           <el-descriptions :column="1" border style="margin-top: 12px">
-            <el-descriptions-item label="交班备注">{{ detailRecord.remark }}</el-descriptions-item>
+            <el-descriptions-item label="交班备注">{{ detailRecord.handoverRemark }}</el-descriptions-item>
           </el-descriptions>
         </template>
 
@@ -344,6 +353,7 @@ const createDialogVisible = ref(false)
 const createSaving = ref(false)
 const createFormRef = ref(null)
 const createForm = reactive({
+  shiftDate: '',
   shiftType: null,
   handoverUserName: '',
   cashTotal: 0,
@@ -358,6 +368,7 @@ const createForm = reactive({
 })
 
 const createRules = {
+  shiftDate: [{ required: true, message: '请选择交接班日期', trigger: 'change' }],
   shiftType: [{ required: true, message: '请选择班次', trigger: 'change' }]
 }
 
@@ -398,13 +409,19 @@ const formatMoney = (val) => {
 const loadData = async () => {
   loading.value = true
   try {
-    const res = await api.finance.shiftReconciliation.page({
+    const params = {
       pageNum: pagination.pageNum,
       pageSize: pagination.pageSize,
-      ...searchForm
-    })
+      status: searchForm.status ?? undefined,
+      shiftType: searchForm.shiftType ?? undefined
+    }
+    if (searchForm.shiftDate) {
+      params.startDate = searchForm.shiftDate
+      params.endDate = searchForm.shiftDate
+    }
+    const res = await api.finance.shiftReconciliation.page(params)
     if (res.code === 200) {
-      tableData.value = res.data.records
+      tableData.value = res.data.list
       pagination.total = res.data.total
     }
   } catch {
@@ -416,9 +433,9 @@ const loadData = async () => {
 
 const loadUserList = async () => {
   try {
-    const res = await api.user.list({ pageNum: 1, pageSize: 200, status: 1 })
+    const res = await api.user.list({ pageNum: 1, pageSize: 200 })
     if (res.code === 200) {
-      userList.value = res.data.records || res.data || []
+      userList.value = res.data?.list || res.data?.records || res.data || []
     }
   } catch {
     userList.value = []
@@ -426,6 +443,7 @@ const loadUserList = async () => {
 }
 
 const openCreateDialog = async () => {
+  createForm.shiftDate = new Date().toISOString().slice(0, 10)
   createForm.shiftType = null
   createForm.cashTotal = 0
   createForm.cardTotal = 0
@@ -439,7 +457,8 @@ const openCreateDialog = async () => {
   try {
     const res = await api.auth.getUserInfo()
     if (res.code === 200) {
-      createForm.handoverUserName = res.data.realName || res.data.username || ''
+      const user = res.data.user || res.data
+      createForm.handoverUserName = user.nickname || user.realName || user.username || ''
     }
   } catch {
     createForm.handoverUserName = ''
@@ -457,6 +476,7 @@ const handleCreate = async () => {
   createSaving.value = true
   try {
     const data = {
+      shiftDate: createForm.shiftDate,
       shiftType: createForm.shiftType,
       cashTotal: createForm.cashTotal,
       cardTotal: createForm.cardTotal,
@@ -469,7 +489,7 @@ const handleCreate = async () => {
       actualTotal: createActualTotal.value,
       difference: createDifference.value,
       differenceReason: createForm.differenceReason,
-      remark: createForm.remark
+      handoverRemark: createForm.remark
     }
     const res = await api.finance.shiftReconciliation.create(data)
     if (res.code === 200) {
@@ -509,7 +529,8 @@ const handleTakeover = async () => {
   try {
     const res = await api.finance.shiftReconciliation.takeover(takeoverRecord.value.id, {
       takeoverUserId: takeoverForm.takeoverUserId,
-      remark: takeoverForm.remark
+      takeoverUserName: userList.value.find(u => u.id === takeoverForm.takeoverUserId)?.nickname || userList.value.find(u => u.id === takeoverForm.takeoverUserId)?.username || '',
+      takeoverRemark: takeoverForm.remark
     })
     if (res.code === 200) {
       ElMessage.success('接班确认成功')

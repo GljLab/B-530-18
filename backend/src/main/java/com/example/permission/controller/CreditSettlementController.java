@@ -59,9 +59,17 @@ public class CreditSettlementController {
         LoginUser loginUser = (LoginUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         CreditSettlement settlement = new CreditSettlement();
         settlement.setAgreementUnitId(Long.valueOf(params.get("agreementUnitId").toString()));
+        settlement.setAgreementUnitName(params.get("agreementUnitName") != null ? params.get("agreementUnitName").toString() : null);
+        settlement.setPeriodStart(params.get("periodStart") != null ? java.time.LocalDate.parse(params.get("periodStart").toString()) : null);
+        settlement.setPeriodEnd(params.get("periodEnd") != null ? java.time.LocalDate.parse(params.get("periodEnd").toString()) : null);
+        settlement.setSettlementMethod(params.get("settlementMethod") != null ? Integer.valueOf(params.get("settlementMethod").toString()) : null);
+        settlement.setSettlementDate(params.get("settlementDate") != null ? java.time.LocalDate.parse(params.get("settlementDate").toString()) : null);
+        settlement.setVoucherNo(params.get("voucherNo") != null ? params.get("voucherNo").toString() : null);
+        settlement.setInvoiceNo(params.get("invoiceNo") != null ? params.get("invoiceNo").toString() : null);
         settlement.setRemark(params.get("remark") != null ? params.get("remark").toString() : null);
         @SuppressWarnings("unchecked")
-        List<Long> billIds = (List<Long>) params.get("billIds");
+        List<Number> rawBillIds = (List<Number>) params.get("billIds");
+        List<Long> billIds = rawBillIds != null ? rawBillIds.stream().map(Number::longValue).toList() : List.of();
         creditSettlementService.createSettlement(settlement, billIds, loginUser);
         return Result.success();
     }

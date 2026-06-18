@@ -70,7 +70,7 @@ public class RefundApplyService {
         String refundNo = generateRefundNo();
         refundApply.setRefundNo(refundNo);
         refundApply.setApplicantId(loginUser.getUserId());
-        refundApply.setApplicantName(loginUser.getUser().getNickname() != null ? loginUser.getUser().getNickname() : loginUser.getUsername());
+        refundApply.setApplicantName(loginUser.getUser() != null && loginUser.getUser().getNickname() != null ? loginUser.getUser().getNickname() : loginUser.getUsername());
         refundApply.setApplyTime(LocalDateTime.now());
         refundApply.setStatus(0);
         refundApply.setCreateTime(LocalDateTime.now());
@@ -84,7 +84,7 @@ public class RefundApplyService {
             throw new BusinessException("该退款申请已处理，不可重复审批");
         }
         refundApply.setApproverId(loginUser.getUserId());
-        refundApply.setApproverName(loginUser.getUser().getNickname() != null ? loginUser.getUser().getNickname() : loginUser.getUsername());
+        refundApply.setApproverName(loginUser.getUser() != null && loginUser.getUser().getNickname() != null ? loginUser.getUser().getNickname() : loginUser.getUsername());
         refundApply.setApproveTime(LocalDateTime.now());
         refundApply.setApproveRemark(approveRemark);
         if (approved) {

@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -23,12 +24,15 @@ public class ShiftReconciliationService {
     @Autowired
     private ShiftReconciliationMapper shiftReconciliationMapper;
 
-    public PageResult<ShiftReconciliation> getPage(Integer pageNum, Integer pageSize, Integer status, String startDate, String endDate) {
+    public PageResult<ShiftReconciliation> getPage(Integer pageNum, Integer pageSize, Integer status, Integer shiftType, String startDate, String endDate) {
         QueryWrapper query = QueryWrapper.create()
                 .from(ShiftReconciliation.class)
                 .where(SHIFT_RECONCILIATION.ID.isNotNull());
         if (status != null) {
             query.and(SHIFT_RECONCILIATION.STATUS.eq(status));
+        }
+        if (shiftType != null) {
+            query.and(SHIFT_RECONCILIATION.SHIFT_TYPE.eq(shiftType));
         }
         if (StringUtils.hasText(startDate)) {
             query.and(SHIFT_RECONCILIATION.SHIFT_DATE.ge(LocalDate.parse(startDate)));
@@ -53,12 +57,21 @@ public class ShiftReconciliationService {
     @Transactional(rollbackFor = Exception.class)
     public void createShift(ShiftReconciliation shift, LoginUser loginUser) {
         shift.setHandoverUserId(loginUser.getUserId());
-        shift.setHandoverUserName(loginUser.getUser().getNickname() != null ? loginUser.getUser().getNickname() : loginUser.getUsername());
+        shift.setHandoverUserName(loginUser.getUser() != null && loginUser.getUser().getNickname() != null ? loginUser.getUser().getNickname() : loginUser.getUsername());
         shift.setStatus(0);
         shift.setTakeoverConfirmed(0);
-        shift.setReceivableTotal(shift.getCashTotal().add(shift.getCardTotal())
-                .add(shift.getMobileTotal()).add(shift.getCreditTotal()));
-        shift.setDifference(shift.getActualTotal().subtract(shift.getReceivableTotal()));
+        BigDecimal cashTotal = shift.getCashTotal() != null ? shift.getCashTotal() : BigDecimal.ZERO;
+        BigDecimal cardTotal = shift.getCardTotal() != null ? shift.getCardTotal() : BigDecimal.ZERO;
+        BigDecimal mobileTotal = shift.getMobileTotal() != null ? shift.getMobileTotal() : BigDecimal.ZERO;
+        BigDecimal creditTotal = shift.getCreditTotal() != null ? shift.getCreditTotal() : BigDecimal.ZERO;
+        BigDecimal actualTotal = shift.getActualTotal() != null ? shift.getActualTotal() : BigDecimal.ZERO;
+        shift.setCashTotal(cashTotal);
+        shift.setCardTotal(cardTotal);
+        shift.setMobileTotal(mobileTotal);
+        shift.setCreditTotal(creditTotal);
+        shift.setActualTotal(actualTotal);
+        shift.setReceivableTotal(cashTotal.add(cardTotal).add(mobileTotal).add(creditTotal));
+        shift.setDifference(actualTotal.subtract(shift.getReceivableTotal()));
         shift.setCreateTime(LocalDateTime.now());
         shift.setUpdateTime(LocalDateTime.now());
         shiftReconciliationMapper.insert(shift);

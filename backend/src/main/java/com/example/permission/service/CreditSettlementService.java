@@ -68,7 +68,7 @@ public class CreditSettlementService {
         String settlementNo = generateSettlementNo();
         settlement.setSettlementNo(settlementNo);
         settlement.setOperatorId(loginUser.getUserId());
-        settlement.setOperatorName(loginUser.getUser().getNickname() != null ? loginUser.getUser().getNickname() : loginUser.getUsername());
+        settlement.setOperatorName(loginUser.getUser() != null && loginUser.getUser().getNickname() != null ? loginUser.getUser().getNickname() : loginUser.getUsername());
         settlement.setStatus(0);
         settlement.setBillCount(billIds.size());
         settlement.setCreateTime(LocalDateTime.now());

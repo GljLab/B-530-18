@@ -25,9 +25,10 @@ public class ShiftReconciliationController {
             @RequestParam(defaultValue = "1") Integer pageNum,
             @RequestParam(defaultValue = "10") Integer pageSize,
             @RequestParam(required = false) Integer status,
+            @RequestParam(required = false) Integer shiftType,
             @RequestParam(required = false) String startDate,
             @RequestParam(required = false) String endDate) {
-        PageResult<ShiftReconciliation> result = shiftReconciliationService.getPage(pageNum, pageSize, status, startDate, endDate);
+        PageResult<ShiftReconciliation> result = shiftReconciliationService.getPage(pageNum, pageSize, status, shiftType, startDate, endDate);
         return Result.success(result);
     }
 

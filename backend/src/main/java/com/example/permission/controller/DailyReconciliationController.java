@@ -42,7 +42,7 @@ public class DailyReconciliationController {
     @PreAuthorize("hasAuthority('finance:daily:add')")
     public Result<Void> autoCalculate(@RequestBody Map<String, String> params) {
         LoginUser loginUser = (LoginUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String date = params.get("date");
+        String date = params.get("reconcileDate");
         dailyReconciliationService.autoCalculate(date, loginUser);
         return Result.success();
     }

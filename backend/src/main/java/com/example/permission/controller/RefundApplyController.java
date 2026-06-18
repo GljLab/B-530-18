@@ -51,9 +51,18 @@ public class RefundApplyController {
     @PreAuthorize("hasAuthority('finance:refund:approve')")
     public Result<Void> approve(@PathVariable Long id, @RequestBody Map<String, Object> params) {
         LoginUser loginUser = (LoginUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Boolean approved = params.get("approved") != null ? (Boolean) params.get("approved") : false;
+        String action = params.get("action") != null ? params.get("action").toString() : "";
+        boolean approved;
+        if ("approve".equals(action) || "modify".equals(action)) {
+            approved = true;
+        } else {
+            approved = false;
+        }
         String approveRemark = params.get("approveRemark") != null ? params.get("approveRemark").toString() : null;
-        BigDecimal approvedAmount = params.get("approvedAmount") != null ? new BigDecimal(params.get("approvedAmount").toString()) : null;
+        BigDecimal approvedAmount = null;
+        if (params.get("approvedAmount") != null) {
+            approvedAmount = new BigDecimal(params.get("approvedAmount").toString());
+        }
         refundApplyService.approve(id, approved, approveRemark, approvedAmount, loginUser);
         return Result.success();
     }
@@ -63,7 +72,8 @@ public class RefundApplyController {
     public Result<Void> executeRefund(@PathVariable Long id, @RequestBody Map<String, Object> params) {
         LoginUser loginUser = (LoginUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Integer refundMethod = params.get("refundMethod") != null ? Integer.valueOf(params.get("refundMethod").toString()) : null;
-        String refundVoucherNo = params.get("refundVoucherNo") != null ? params.get("refundVoucherNo").toString() : null;
+        String refundVoucherNo = params.get("refundVoucherNo") != null ? params.get("refundVoucherNo").toString() :
+                (params.get("voucherNo") != null ? params.get("voucherNo").toString() : null);
         refundApplyService.executeRefund(id, refundMethod, refundVoucherNo, loginUser);
         return Result.success();
     }

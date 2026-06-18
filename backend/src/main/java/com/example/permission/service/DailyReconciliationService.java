@@ -89,7 +89,7 @@ public class DailyReconciliationService {
         record.setActualTotal(BigDecimal.ZERO);
         record.setDifference(BigDecimal.ZERO);
         record.setOperatorId(loginUser.getUserId());
-        record.setOperatorName(loginUser.getUser().getNickname() != null ? loginUser.getUser().getNickname() : loginUser.getUsername());
+        record.setOperatorName(loginUser.getUser() != null && loginUser.getUser().getNickname() != null ? loginUser.getUser().getNickname() : loginUser.getUsername());
         record.setStatus(0);
         record.setCreateTime(LocalDateTime.now());
         record.setUpdateTime(LocalDateTime.now());
@@ -108,8 +108,11 @@ public class DailyReconciliationService {
         record.setActualCash(data.getActualCash());
         record.setActualCard(data.getActualCard());
         record.setActualMobile(data.getActualMobile());
-        record.setActualTotal(data.getActualTotal());
-        record.setDifference(data.getActualTotal().subtract(record.getReceivableTotal()));
+        BigDecimal actualTotal = (data.getActualCash() != null ? data.getActualCash() : BigDecimal.ZERO)
+                .add(data.getActualCard() != null ? data.getActualCard() : BigDecimal.ZERO)
+                .add(data.getActualMobile() != null ? data.getActualMobile() : BigDecimal.ZERO);
+        record.setActualTotal(actualTotal);
+        record.setDifference(actualTotal.subtract(record.getReceivableTotal()));
         record.setDifferenceReason(data.getDifferenceReason());
         record.setDifferenceProof(data.getDifferenceProof());
         record.setStatus(1);

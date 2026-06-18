@@ -303,7 +303,7 @@ const loadList = async () => {
       status: searchForm.status ?? undefined
     })
     if (res.code === 200) {
-      tableData.value = res.data.records
+      tableData.value = res.data.list
       pagination.total = res.data.total
     }
   } catch {

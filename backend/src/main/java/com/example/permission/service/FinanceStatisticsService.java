@@ -136,6 +136,33 @@ public class FinanceStatisticsService {
         result.put("refundCount", refundCount);
         result.put("grandTotal", grandTotal);
         result.put("totalCount", totalCount);
+
+        List<Map<String, Object>> paymentDetails = new ArrayList<>();
+        Map<String, Object> cashDetail = new HashMap<>();
+        cashDetail.put("method", "现金");
+        cashDetail.put("amount", cashTotal);
+        cashDetail.put("count", cashCount);
+        paymentDetails.add(cashDetail);
+
+        Map<String, Object> cardDetail = new HashMap<>();
+        cardDetail.put("method", "刷卡");
+        cardDetail.put("amount", cardTotal);
+        cardDetail.put("count", cardCount);
+        paymentDetails.add(cardDetail);
+
+        Map<String, Object> mobileDetail = new HashMap<>();
+        mobileDetail.put("method", "移动支付");
+        mobileDetail.put("amount", mobileTotal);
+        mobileDetail.put("count", mobileCount);
+        paymentDetails.add(mobileDetail);
+
+        Map<String, Object> creditDetail = new HashMap<>();
+        creditDetail.put("method", "挂账");
+        creditDetail.put("amount", creditTotal.add(creditBillTotal));
+        creditDetail.put("count", creditCount + creditBills.size());
+        paymentDetails.add(creditDetail);
+
+        result.put("paymentDetails", paymentDetails);
         return result;
     }
 

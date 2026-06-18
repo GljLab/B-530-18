@@ -119,11 +119,11 @@ const loadData = async () => {
   try {
     const res = await api.finance.statistics.receivableMonitor()
     if (res.code === 200) {
-      const data = res.data || {}
-      tableData.value = data.units || []
-      summary.totalReceivable = data.totalReceivable || 0
-      summary.warningCount = (data.units || []).filter(u => u.warningLevel > 0).length
-      summary.overdueCount = (data.units || []).filter(u => u.warningLevel === 3).length
+      const units = Array.isArray(res.data) ? res.data : (res.data?.units || [])
+      tableData.value = units
+      summary.totalReceivable = units.reduce((sum, u) => sum + (Number(u.currentDebt) || 0), 0)
+      summary.warningCount = units.filter(u => u.warningLevel > 0).length
+      summary.overdueCount = units.filter(u => u.warningLevel === 3).length
     }
   } catch {
     ElMessage.error('加载应收监控数据失败')

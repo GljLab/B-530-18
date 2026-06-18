@@ -115,15 +115,15 @@
                 <div class="group-header">现金</div>
                 <div class="amount-row">
                   <span class="amount-label">房费</span>
-                  <span class="amount-value">¥{{ formatMoney(currentRecord.cashRoomAmount) }}</span>
+                  <span class="amount-value">¥{{ formatMoney(currentRecord.cashRoom) }}</span>
                 </div>
                 <div class="amount-row">
                   <span class="amount-label">押金</span>
-                  <span class="amount-value">¥{{ formatMoney(currentRecord.cashDepositAmount) }}</span>
+                  <span class="amount-value">¥{{ formatMoney(currentRecord.cashDeposit) }}</span>
                 </div>
                 <div class="amount-row">
                   <span class="amount-label">其他</span>
-                  <span class="amount-value">¥{{ formatMoney(currentRecord.cashOtherAmount) }}</span>
+                  <span class="amount-value">¥{{ formatMoney(currentRecord.cashOther) }}</span>
                 </div>
                 <div class="amount-row subtotal">
                   <span class="amount-label">合计</span>
@@ -135,15 +135,15 @@
                 <div class="group-header">刷卡</div>
                 <div class="amount-row">
                   <span class="amount-label">房费</span>
-                  <span class="amount-value">¥{{ formatMoney(currentRecord.cardRoomAmount) }}</span>
+                  <span class="amount-value">¥{{ formatMoney(currentRecord.cardRoom) }}</span>
                 </div>
                 <div class="amount-row">
                   <span class="amount-label">押金</span>
-                  <span class="amount-value">¥{{ formatMoney(currentRecord.cardDepositAmount) }}</span>
+                  <span class="amount-value">¥{{ formatMoney(currentRecord.cardDeposit) }}</span>
                 </div>
                 <div class="amount-row">
                   <span class="amount-label">其他</span>
-                  <span class="amount-value">¥{{ formatMoney(currentRecord.cardOtherAmount) }}</span>
+                  <span class="amount-value">¥{{ formatMoney(currentRecord.cardOther) }}</span>
                 </div>
                 <div class="amount-row subtotal">
                   <span class="amount-label">合计</span>
@@ -155,11 +155,11 @@
                 <div class="group-header">移动支付</div>
                 <div class="amount-row">
                   <span class="amount-label">支付宝</span>
-                  <span class="amount-value">¥{{ formatMoney(currentRecord.alipayAmount) }}</span>
+                  <span class="amount-value">¥{{ formatMoney(currentRecord.mobileAlipay) }}</span>
                 </div>
                 <div class="amount-row">
                   <span class="amount-label">微信</span>
-                  <span class="amount-value">¥{{ formatMoney(currentRecord.wechatAmount) }}</span>
+                  <span class="amount-value">¥{{ formatMoney(currentRecord.mobileWechat) }}</span>
                 </div>
                 <div class="amount-row subtotal">
                   <span class="amount-label">合计</span>
@@ -282,15 +282,15 @@
                 <div class="group-header">现金</div>
                 <div class="amount-row">
                   <span class="amount-label">房费</span>
-                  <span class="amount-value">¥{{ formatMoney(currentRecord.cashRoomAmount) }}</span>
+                  <span class="amount-value">¥{{ formatMoney(currentRecord.cashRoom) }}</span>
                 </div>
                 <div class="amount-row">
                   <span class="amount-label">押金</span>
-                  <span class="amount-value">¥{{ formatMoney(currentRecord.cashDepositAmount) }}</span>
+                  <span class="amount-value">¥{{ formatMoney(currentRecord.cashDeposit) }}</span>
                 </div>
                 <div class="amount-row">
                   <span class="amount-label">其他</span>
-                  <span class="amount-value">¥{{ formatMoney(currentRecord.cashOtherAmount) }}</span>
+                  <span class="amount-value">¥{{ formatMoney(currentRecord.cashOther) }}</span>
                 </div>
                 <div class="amount-row subtotal">
                   <span class="amount-label">合计</span>
@@ -302,15 +302,15 @@
                 <div class="group-header">刷卡</div>
                 <div class="amount-row">
                   <span class="amount-label">房费</span>
-                  <span class="amount-value">¥{{ formatMoney(currentRecord.cardRoomAmount) }}</span>
+                  <span class="amount-value">¥{{ formatMoney(currentRecord.cardRoom) }}</span>
                 </div>
                 <div class="amount-row">
                   <span class="amount-label">押金</span>
-                  <span class="amount-value">¥{{ formatMoney(currentRecord.cardDepositAmount) }}</span>
+                  <span class="amount-value">¥{{ formatMoney(currentRecord.cardDeposit) }}</span>
                 </div>
                 <div class="amount-row">
                   <span class="amount-label">其他</span>
-                  <span class="amount-value">¥{{ formatMoney(currentRecord.cardOtherAmount) }}</span>
+                  <span class="amount-value">¥{{ formatMoney(currentRecord.cardOther) }}</span>
                 </div>
                 <div class="amount-row subtotal">
                   <span class="amount-label">合计</span>
@@ -322,11 +322,11 @@
                 <div class="group-header">移动支付</div>
                 <div class="amount-row">
                   <span class="amount-label">支付宝</span>
-                  <span class="amount-value">¥{{ formatMoney(currentRecord.alipayAmount) }}</span>
+                  <span class="amount-value">¥{{ formatMoney(currentRecord.mobileAlipay) }}</span>
                 </div>
                 <div class="amount-row">
                   <span class="amount-label">微信</span>
-                  <span class="amount-value">¥{{ formatMoney(currentRecord.wechatAmount) }}</span>
+                  <span class="amount-value">¥{{ formatMoney(currentRecord.mobileWechat) }}</span>
                 </div>
                 <div class="amount-row subtotal">
                   <span class="amount-label">合计</span>
@@ -470,13 +470,18 @@ const formatMoney = (val) => {
 const loadData = async () => {
   loading.value = true
   try {
-    const res = await api.finance.dailyReconciliation.page({
+    const params = {
       pageNum: pagination.pageNum,
       pageSize: pagination.pageSize,
-      ...searchForm
-    })
+      status: searchForm.status ?? undefined
+    }
+    if (searchForm.reconcileDate) {
+      params.startDate = searchForm.reconcileDate
+      params.endDate = searchForm.reconcileDate
+    }
+    const res = await api.finance.dailyReconciliation.page(params)
     if (res.code === 200) {
-      tableData.value = res.data.records
+      tableData.value = res.data.list
       pagination.total = res.data.total
     }
   } catch {
@@ -548,7 +553,7 @@ const handleConfirm = async () => {
       actualCard: reconcileForm.actualCard,
       actualMobile: reconcileForm.actualMobile,
       differenceReason: reconcileForm.differenceReason,
-      differenceProofUrls: reconcileForm.differenceProof.map(f => f.url)
+      differenceProof: reconcileForm.differenceProof.map(f => f.url).join(',')
     }
     const res = await api.finance.dailyReconciliation.confirm(currentRecord.value.id, data)
     if (res.code === 200) {

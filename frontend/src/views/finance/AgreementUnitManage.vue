@@ -122,15 +122,15 @@
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item label="联系电话" prop="phone">
-              <el-input v-model="form.phone" placeholder="请输入联系电话" />
+            <el-form-item label="联系电话" prop="contactPhone">
+              <el-input v-model="form.contactPhone" placeholder="请输入联系电话" />
             </el-form-item>
           </el-col>
         </el-row>
         <el-row :gutter="20">
           <el-col :span="12">
-            <el-form-item label="联系人姓名" prop="contactName">
-              <el-input v-model="form.contactName" placeholder="请输入联系人姓名" />
+            <el-form-item label="联系人姓名" prop="contactPerson">
+              <el-input v-model="form.contactPerson" placeholder="请输入联系人姓名" />
             </el-form-item>
           </el-col>
           <el-col :span="12">
@@ -141,8 +141,8 @@
         </el-row>
         <el-row :gutter="20">
           <el-col :span="12">
-            <el-form-item label="联系人手机号" prop="contactPhone">
-              <el-input v-model="form.contactPhone" placeholder="请输入联系人手机号" />
+            <el-form-item label="联系人手机号" prop="contactMobile">
+              <el-input v-model="form.contactMobile" placeholder="请输入联系人手机号" />
             </el-form-item>
           </el-col>
           <el-col :span="12">
@@ -293,10 +293,10 @@ const form = reactive({
   unitName: '',
   creditCode: '',
   address: '',
-  phone: '',
-  contactName: '',
-  contactPosition: '',
   contactPhone: '',
+  contactPerson: '',
+  contactPosition: '',
+  contactMobile: '',
   contactEmail: '',
   cooperationType: null,
   signDate: '',
@@ -305,7 +305,7 @@ const form = reactive({
   creditLimit: null,
   discountRate: null,
   remark: '',
-  attachment: null
+  agreementFile: null
 })
 
 const dialogTitle = computed(() => form.id ? '编辑协议单位' : '新增协议单位')
@@ -327,7 +327,7 @@ const loadData = async () => {
     }
     const res = await api.finance.agreementUnit.page(params)
     if (res.code === 200) {
-      tableData.value = res.data?.records || res.data?.list || []
+      tableData.value = res.data?.list || []
       total.value = res.data?.total || 0
     }
   } catch {
@@ -348,10 +348,10 @@ const resetForm = () => {
   form.unitName = ''
   form.creditCode = ''
   form.address = ''
-  form.phone = ''
-  form.contactName = ''
-  form.contactPosition = ''
   form.contactPhone = ''
+  form.contactPerson = ''
+  form.contactPosition = ''
+  form.contactMobile = ''
   form.contactEmail = ''
   form.cooperationType = null
   form.signDate = ''
@@ -360,7 +360,7 @@ const resetForm = () => {
   form.creditLimit = null
   form.discountRate = null
   form.remark = ''
-  form.attachment = null
+  form.agreementFile = null
   fileList.value = []
 }
 
@@ -379,10 +379,10 @@ const handleEdit = async (row) => {
         unitName: res.data.unitName || '',
         creditCode: res.data.creditCode || '',
         address: res.data.address || '',
-        phone: res.data.phone || '',
-        contactName: res.data.contactName || '',
-        contactPosition: res.data.contactPosition || '',
         contactPhone: res.data.contactPhone || '',
+        contactPerson: res.data.contactPerson || '',
+        contactPosition: res.data.contactPosition || '',
+        contactMobile: res.data.contactMobile || '',
         contactEmail: res.data.contactEmail || '',
         cooperationType: res.data.cooperationType,
         signDate: res.data.signDate || '',
@@ -391,10 +391,10 @@ const handleEdit = async (row) => {
         creditLimit: res.data.creditLimit,
         discountRate: res.data.discountRate,
         remark: res.data.remark || '',
-        attachment: res.data.attachment || null
+        agreementFile: res.data.agreementFile || null
       })
-      if (res.data.attachmentName) {
-        fileList.value = [{ name: res.data.attachmentName, url: res.data.attachment }]
+      if (res.data.agreementFile) {
+        fileList.value = [{ name: '协议文件', url: res.data.agreementFile }]
       }
     }
     dialogVisible.value = true
@@ -440,12 +440,12 @@ const handleDelete = async (row) => {
 }
 
 const handleFileChange = (file) => {
-  form.attachment = file.raw
+  form.agreementFile = file.raw
   fileList.value = [file]
 }
 
 const handleFileRemove = () => {
-  form.attachment = null
+  form.agreementFile = null
   fileList.value = []
 }
 
@@ -456,11 +456,11 @@ const handleSubmit = async () => {
   submitLoading.value = true
   try {
     const submitData = { ...form }
-    if (submitData.attachment && submitData.attachment instanceof File) {
+    if (submitData.agreementFile && submitData.agreementFile instanceof File) {
       const formData = new FormData()
       Object.keys(submitData).forEach((key) => {
-        if (key === 'attachment') {
-          formData.append('file', submitData.attachment)
+        if (key === 'agreementFile') {
+          formData.append('file', submitData.agreementFile)
         } else if (submitData[key] !== null && submitData[key] !== undefined) {
           formData.append(key, submitData[key])
         }
@@ -483,7 +483,7 @@ const handleSubmit = async () => {
         }
       }
     } else {
-      delete submitData.attachment
+      delete submitData.agreementFile
       if (form.id) {
         const res = await api.finance.agreementUnit.update(submitData)
         if (res.code === 200) {
