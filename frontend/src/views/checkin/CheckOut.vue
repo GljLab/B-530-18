@@ -7,7 +7,67 @@
       </div>
     </div>
 
-    <el-row :gutter="16">
+    <el-card v-if="!hasCheckInId" class="select-checkin-card">
+      <template #header>
+        <span>选择入住单</span>
+      </template>
+      <el-form :inline="true" :model="searchForm" style="margin-bottom: 16px">
+        <el-form-item label="入住单号">
+          <el-input v-model="searchForm.keyword" placeholder="请输入入住单号/客户姓名/手机号/房号" style="width: 300px" />
+        </el-form-item>
+        <el-form-item label="入住状态">
+          <el-select v-model="searchForm.status" placeholder="全部" style="width: 150px" clearable>
+            <el-option label="在住" :value="1" />
+            <el-option label="超期未退" :value="3" />
+          </el-select>
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" @click="searchCheckIns" :icon="Search">查询</el-button>
+        </el-form-item>
+      </el-form>
+
+      <el-table :data="checkInList" v-loading="loadingList" style="width: 100%">
+        <el-table-column prop="checkInNo" label="入住单号" width="200" />
+        <el-table-column prop="customerName" label="客户姓名" width="100" />
+        <el-table-column prop="customerPhone" label="手机号" width="130" />
+        <el-table-column prop="roomTypeName" label="房型" width="100" />
+        <el-table-column prop="roomNumber" label="房号" width="80" />
+        <el-table-column prop="checkInDate" label="入住日期" width="110" />
+        <el-table-column prop="checkOutDate" label="预计退房" width="110" />
+        <el-table-column label="状态" width="100">
+          <template #default="{ row }">
+            <el-tag v-if="row.isOverdue === 1" type="danger" size="small">超期未退</el-tag>
+            <el-tag v-else type="success" size="small">在住</el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="已住天数" width="100">
+          <template #default="{ row }">
+            {{ calculateStayedDays(row.checkInDate) }}天
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" width="120">
+          <template #default="{ row }">
+            <el-button type="primary" link @click="selectCheckIn(row)">
+              办理退房
+            </el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+
+      <div style="margin-top: 16px; display: flex; justify-content: flex-end">
+        <el-pagination
+          v-model:current-page="searchForm.pageNum"
+          v-model:page-size="searchForm.pageSize"
+          :page-sizes="[10, 20, 50]"
+          :total="total"
+          layout="total, sizes, prev, pager, next"
+          @size-change="searchCheckIns"
+          @current-change="searchCheckIns"
+        />
+      </div>
+    </el-card>
+
+    <el-row v-if="hasCheckInId" :gutter="16">
       <el-col :span="16">
         <el-card class="info-card">
           <template #header>
@@ -245,19 +305,31 @@
 import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { ArrowLeft, CircleCheckFilled } from '@element-plus/icons-vue'
+import { ArrowLeft, CircleCheckFilled, Search } from '@element-plus/icons-vue'
 import api from '@/api'
 
 const route = useRoute()
 const router = useRouter()
 
 const loading = ref(false)
+const loadingList = ref(false)
 const submitting = ref(false)
 const successDialogVisible = ref(false)
 const roomInspectionEnabled = ref(false)
 const useDepositDeduction = ref(true)
 
-const checkInId = route.query.checkInId
+const checkInId = ref(route.query.checkInId ? Number(route.query.checkInId) : null)
+const hasCheckInId = computed(() => !!checkInId.value)
+
+const checkInList = ref([])
+const total = ref(0)
+
+const searchForm = reactive({
+  keyword: '',
+  status: null,
+  pageNum: 1,
+  pageSize: 10
+})
 
 const checkIn = ref({
   guests: [],
@@ -331,16 +403,15 @@ const depositRefund = computed(() => {
 })
 
 const loadDetail = async () => {
-  if (!checkInId) {
-    ElMessage.error('缺少入住单ID')
+  if (!checkInId.value) {
     return
   }
   loading.value = true
   try {
-    const res = await api.checkin.get(checkInId)
+    const res = await api.checkin.get(checkInId.value)
     if (res.code === 200) {
       checkIn.value = res.data
-      checkoutForm.checkInId = checkInId
+      checkoutForm.checkInId = checkInId.value
       checkoutForm.roomFee = res.data.roomTotal || 0
       checkoutForm.extraBedFee = res.data.extraBedTotal || 0
       checkoutForm.otherFee = res.data.otherFee || 0
@@ -353,6 +424,42 @@ const loadDetail = async () => {
   } finally {
     loading.value = false
   }
+}
+
+const searchCheckIns = async () => {
+  loadingList.value = true
+  try {
+    const params = {
+      keyword: searchForm.keyword || undefined,
+      status: searchForm.status || undefined,
+      isOverdue: searchForm.status === 3 ? 1 : undefined,
+      pageNum: searchForm.pageNum,
+      pageSize: searchForm.pageSize
+    }
+    const res = await api.checkin.list(params)
+    if (res.code === 200) {
+      checkInList.value = res.data.records || []
+      total.value = res.data.total || 0
+    }
+  } catch (e) {
+    console.error('查询入住单失败', e)
+  } finally {
+    loadingList.value = false
+  }
+}
+
+const selectCheckIn = (row) => {
+  checkInId.value = row.id
+  router.replace({ query: { checkInId: row.id } })
+  loadDetail()
+}
+
+const calculateStayedDays = (checkInDate) => {
+  if (!checkInDate) return 0
+  const start = new Date(checkInDate)
+  const today = new Date()
+  const diff = Math.floor((today - start) / (1000 * 60 * 60 * 24))
+  return diff < 0 ? 0 : diff
 }
 
 const handleCompensationChange = (value) => {
@@ -387,7 +494,7 @@ const handleCheckout = async () => {
   submitting.value = true
   try {
     const data = {
-      checkInId: checkInId,
+      checkInId: checkInId.value,
       roomFee: checkoutForm.roomFee,
       extraBedFee: checkoutForm.extraBedFee,
       otherFee: checkoutForm.otherFee,
@@ -419,7 +526,13 @@ const handleCheckout = async () => {
 }
 
 const goBack = () => {
-  router.back()
+  if (hasCheckInId.value) {
+    checkInId.value = null
+    router.replace({ query: {} })
+    searchCheckIns()
+  } else {
+    router.back()
+  }
 }
 
 const goToList = () => {
@@ -433,12 +546,20 @@ const getDepositMethodText = (method) => {
 }
 
 onMounted(() => {
-  loadDetail()
+  if (hasCheckInId.value) {
+    loadDetail()
+  } else {
+    searchCheckIns()
+  }
 })
 </script>
 
 <style scoped lang="scss">
 .checkout-page {
+  .select-checkin-card {
+    margin-bottom: 16px;
+  }
+
   .page-header {
     display: flex;
     justify-content: space-between;

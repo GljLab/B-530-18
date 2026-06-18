@@ -53,18 +53,33 @@ public class CheckInController {
         Integer bookingSource = params.get("bookingSource") != null ? Integer.valueOf(params.get("bookingSource").toString()) : 1;
 
         Customer customer = new Customer();
-        if (customerMap.get("id") != null) {
-            customer.setId(Long.valueOf(customerMap.get("id").toString()));
+        if (customerMap != null) {
+            if (customerMap.get("id") != null) {
+                customer.setId(Long.valueOf(customerMap.get("id").toString()));
+            }
+            customer.setName(customerMap.get("name") != null ? customerMap.get("name").toString() : null);
+            customer.setPhone(customerMap.get("phone") != null ? customerMap.get("phone").toString() : null);
+            if (customerMap.get("gender") != null) {
+                customer.setGender(Integer.valueOf(customerMap.get("gender").toString()));
+            }
+            if (customerMap.get("idType") != null) {
+                customer.setIdType(Integer.valueOf(customerMap.get("idType").toString()));
+            }
+            customer.setIdNumber(customerMap.get("idNumber") != null ? customerMap.get("idNumber").toString() : null);
+        } else {
+            if (params.get("customerId") != null) {
+                customer.setId(Long.valueOf(params.get("customerId").toString()));
+            }
+            customer.setName(params.get("customerName") != null ? params.get("customerName").toString() : null);
+            customer.setPhone(params.get("customerPhone") != null ? params.get("customerPhone").toString() : null);
+            if (params.get("gender") != null) {
+                customer.setGender(Integer.valueOf(params.get("gender").toString()));
+            }
+            if (params.get("idType") != null) {
+                customer.setIdType(Integer.valueOf(params.get("idType").toString()));
+            }
+            customer.setIdNumber(params.get("idNumber") != null ? params.get("idNumber").toString() : null);
         }
-        customer.setName(customerMap.get("name") != null ? customerMap.get("name").toString() : null);
-        customer.setPhone(customerMap.get("phone") != null ? customerMap.get("phone").toString() : null);
-        if (customerMap.get("gender") != null) {
-            customer.setGender(Integer.valueOf(customerMap.get("gender").toString()));
-        }
-        if (customerMap.get("idType") != null) {
-            customer.setIdType(Integer.valueOf(customerMap.get("idType").toString()));
-        }
-        customer.setIdNumber(customerMap.get("idNumber") != null ? customerMap.get("idNumber").toString() : null);
 
         CheckIn checkIn = checkInService.walkInCheckIn(roomTypeId, roomId, customer, guests,
                 checkInDate, checkOutDate, depositAmount, depositMethod, depositVoucherNo,

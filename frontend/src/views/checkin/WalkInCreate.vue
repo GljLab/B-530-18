@@ -681,27 +681,43 @@ const handleNext = async () => {
 const handleSubmit = async () => {
   submitting.value = true
   try {
-    const payload = {
-      roomId: selectedRoom.value?.id,
-      roomNumber: selectedRoom.value?.roomNumber,
-      roomTypeId: step1Form.roomTypeId,
-      checkinDate: step1Form.checkinDate,
-      checkoutDate: step1Form.checkoutDate,
-      days: stayDays.value,
-      customerName: step2Form.customerName,
-      customerPhone: step2Form.customerPhone,
-      idType: step2Form.idType,
-      idNumber: step2Form.idNumber,
-      mainGuest: {
+    const guests = [
+      {
+        isMain: 1,
         name: step3Form.mainGuest.name,
         phone: step3Form.mainGuest.phone,
         idType: step3Form.mainGuest.idType,
         idNumber: step3Form.mainGuest.idNumber
       },
-      roommates: step3Form.roommates,
+      ...(step3Form.roommates || []).map((r) => ({
+        isMain: 0,
+        name: r.name,
+        idType: r.idType,
+        idNumber: r.idNumber
+      }))
+    ]
+
+    const payload = {
+      roomId: selectedRoom.value?.id,
+      roomNumber: selectedRoom.value?.roomNumber,
+      roomTypeId: step1Form.roomTypeId,
+      checkInDate: step1Form.checkinDate,
+      checkOutDate: step1Form.checkoutDate,
+      days: stayDays.value,
+      customer: {
+        name: step2Form.customerName,
+        phone: step2Form.customerPhone,
+        idType: step2Form.idType,
+        idNumber: step2Form.idNumber
+      },
+      customerName: step2Form.customerName,
+      customerPhone: step2Form.customerPhone,
+      idType: step2Form.idType,
+      idNumber: step2Form.idNumber,
+      guests: guests,
       depositAmount: step4Form.depositAmount,
-      depositType: step4Form.depositType,
-      voucherNo: step4Form.voucherNo,
+      depositMethod: step4Form.depositType,
+      depositVoucherNo: step4Form.voucherNo,
       keyCardCount: step4Form.keyCardCount,
       remark: step4Form.remark
     }
