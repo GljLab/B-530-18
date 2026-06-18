@@ -282,6 +282,38 @@
             <span>房量对比</span>
           </el-menu-item>
         </el-sub-menu>
+
+        <el-sub-menu index="/checkin" v-if="hasCheckinPermission">
+          <template #title>
+            <el-icon><Key /></el-icon>
+            <span>入住管理</span>
+          </template>
+
+          <el-menu-item index="/checkin/list" v-if="hasPermission('checkin:list')">
+            <el-icon><Document /></el-icon>
+            <span>入住单管理</span>
+          </el-menu-item>
+
+          <el-menu-item index="/checkin/create" v-if="hasPermission('checkin:create')">
+            <el-icon><Plus /></el-icon>
+            <span>办理入住</span>
+          </el-menu-item>
+
+          <el-menu-item index="/checkin/walkin" v-if="hasPermission('checkin:walkin')">
+            <el-icon><User /></el-icon>
+            <span>散客入住</span>
+          </el-menu-item>
+
+          <el-menu-item index="/checkin/checkout" v-if="hasPermission('checkin:checkout')">
+            <el-icon><SwitchButton /></el-icon>
+            <span>办理退房</span>
+          </el-menu-item>
+
+          <el-menu-item index="/checkin/statistics" v-if="hasPermission('checkin:statistics:list')">
+            <el-icon><DataLine /></el-icon>
+            <span>入住统计</span>
+          </el-menu-item>
+        </el-sub-menu>
       </el-menu>
     </el-aside>
     
@@ -429,6 +461,14 @@ const hasVisualPermission = computed(() => {
   return hasPermission('visual:roomStatus:list') ||
          hasPermission('visual:gantt:list') ||
          hasPermission('visual:compare:list')
+})
+
+const hasCheckinPermission = computed(() => {
+  return hasPermission('checkin:list') ||
+         hasPermission('checkin:create') ||
+         hasPermission('checkin:walkin') ||
+         hasPermission('checkin:checkout') ||
+         hasPermission('checkin:statistics:list')
 })
 
 const toggleCollapse = () => {

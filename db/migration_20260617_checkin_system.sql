@@ -296,78 +296,78 @@ CREATE TABLE IF NOT EXISTS consumption_record (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='消费记录表';
 
 -- =============================================
--- 9. 入住管理菜单 (ID range: 500-599)
+-- 9. 入住管理菜单 (ID range: 900-999)
 -- =============================================
 INSERT IGNORE INTO sys_menu (id, menu_name, parent_id, order_num, path, component, perms, menu_type, visible, status, icon) VALUES
-(500, '入住管理', 0, 4, '/checkin', NULL, NULL, 0, 1, 1, 'Key'),
-(501, '入住单管理', 500, 1, '/checkin/list', 'checkin/CheckInList', 'checkin:list', 1, 1, 1, 'Document'),
-(502, '办理入住', 500, 2, '/checkin/create', 'checkin/CheckInCreate', 'checkin:create', 1, 1, 1, 'Plus'),
-(503, '散客入住', 500, 3, '/checkin/walkin', 'checkin/WalkInCreate', 'checkin:walkin', 1, 1, 1, 'User'),
-(504, '办理退房', 500, 4, '/checkin/checkout', 'checkin/CheckOut', 'checkin:checkout', 1, 1, 1, 'SwitchButton'),
-(505, '入住统计', 500, 5, '/checkin/statistics', 'checkin/CheckInStatistics', 'checkin:statistics:list', 1, 1, 1, 'DataLine');
+(900, '入住管理', 0, 8, '/checkin', NULL, NULL, 0, 1, 1, 'Key'),
+(901, '入住单管理', 900, 1, '/checkin/list', 'checkin/CheckInList', 'checkin:list', 1, 1, 1, 'Document'),
+(902, '办理入住', 900, 2, '/checkin/create', 'checkin/CheckInCreate', 'checkin:create', 1, 1, 1, 'Plus'),
+(903, '散客入住', 900, 3, '/checkin/walkin', 'checkin/WalkInCreate', 'checkin:walkin', 1, 1, 1, 'User'),
+(904, '办理退房', 900, 4, '/checkin/checkout', 'checkin/CheckOut', 'checkin:checkout', 1, 1, 1, 'SwitchButton'),
+(905, '入住统计', 900, 5, '/checkin/statistics', 'checkin/CheckInStatistics', 'checkin:statistics:list', 1, 1, 1, 'DataLine');
 
 -- 入住单管理按钮权限
 INSERT IGNORE INTO sys_menu (id, menu_name, parent_id, order_num, path, component, perms, menu_type, visible, status, icon) VALUES
-(511, '入住单查询', 501, 1, '', NULL, 'checkin:query', 2, 1, 1, NULL),
-(512, '入住单创建', 501, 2, '', NULL, 'checkin:create', 2, 1, 1, NULL),
-(513, '入住单编辑', 501, 3, '', NULL, 'checkin:edit', 2, 1, 1, NULL),
-(514, '办理退房', 501, 4, '', NULL, 'checkin:checkout', 2, 1, 1, NULL),
-(515, '办理换房', 501, 5, '', NULL, 'checkin:changeRoom', 2, 1, 1, NULL),
-(516, '办理续住', 501, 6, '', NULL, 'checkin:extend', 2, 1, 1, NULL),
-(517, '添加消费', 501, 7, '', NULL, 'checkin:addConsumption', 2, 1, 1, NULL),
-(518, '押金管理', 501, 8, '', NULL, 'checkin:deposit:manage', 2, 1, 1, NULL),
-(519, '免押金授权', 501, 9, '', NULL, 'checkin:deposit:free', 2, 1, 1, NULL),
-(520, '入住单导出', 501, 10, '', NULL, 'checkin:export', 2, 1, 1, NULL),
-(521, '损坏赔偿处理', 501, 11, '', NULL, 'checkin:damage:handle', 2, 1, 1, NULL);
+(911, '入住单查询', 901, 1, '', NULL, 'checkin:query', 2, 1, 1, NULL),
+(912, '入住单创建', 901, 2, '', NULL, 'checkin:create', 2, 1, 1, NULL),
+(913, '入住单编辑', 901, 3, '', NULL, 'checkin:edit', 2, 1, 1, NULL),
+(914, '办理退房', 901, 4, '', NULL, 'checkin:checkout', 2, 1, 1, NULL),
+(915, '办理换房', 901, 5, '', NULL, 'checkin:changeRoom', 2, 1, 1, NULL),
+(916, '办理续住', 901, 6, '', NULL, 'checkin:extend', 2, 1, 1, NULL),
+(917, '添加消费', 901, 7, '', NULL, 'checkin:addConsumption', 2, 1, 1, NULL),
+(918, '押金管理', 901, 8, '', NULL, 'checkin:deposit:manage', 2, 1, 1, NULL),
+(919, '免押金授权', 901, 9, '', NULL, 'checkin:deposit:free', 2, 1, 1, NULL),
+(920, '入住单导出', 901, 10, '', NULL, 'checkin:export', 2, 1, 1, NULL),
+(921, '损坏赔偿处理', 901, 11, '', NULL, 'checkin:damage:handle', 2, 1, 1, NULL);
 
 -- 入住统计按钮权限
 INSERT IGNORE INTO sys_menu (id, menu_name, parent_id, order_num, path, component, perms, menu_type, visible, status, icon) VALUES
-(531, '统计查询', 505, 1, '', NULL, 'checkin:statistics:query', 2, 1, 1, NULL),
-(532, '统计导出', 505, 2, '', NULL, 'checkin:statistics:export', 2, 1, 1, NULL);
+(931, '统计查询', 905, 1, '', NULL, 'checkin:statistics:query', 2, 1, 1, NULL),
+(932, '统计导出', 905, 2, '', NULL, 'checkin:statistics:export', 2, 1, 1, NULL);
 
 -- =============================================
 -- 10. 分配角色权限 - 超级管理员
 -- =============================================
 INSERT IGNORE INTO sys_role_menu (role_id, menu_id) VALUES
-(1, 500), (1, 501), (1, 502), (1, 503), (1, 504), (1, 505),
-(1, 511), (1, 512), (1, 513), (1, 514), (1, 515), (1, 516), (1, 517), (1, 518), (1, 519), (1, 520), (1, 521),
-(1, 531), (1, 532);
+(1, 900), (1, 901), (1, 902), (1, 903), (1, 904), (1, 905),
+(1, 911), (1, 912), (1, 913), (1, 914), (1, 915), (1, 916), (1, 917), (1, 918), (1, 919), (1, 920), (1, 921),
+(1, 931), (1, 932);
 
 -- =============================================
 -- 11. 分配角色权限 - 酒店管理员(hotel_admin)
 -- =============================================
 INSERT IGNORE INTO sys_role_menu (role_id, menu_id) VALUES
-(3, 500), (3, 501), (3, 502), (3, 503), (3, 504), (3, 505),
-(3, 511), (3, 512), (3, 513), (3, 514), (3, 515), (3, 516), (3, 517), (3, 518), (3, 519), (3, 520), (3, 521),
-(3, 531), (3, 532);
+(3, 900), (3, 901), (3, 902), (3, 903), (3, 904), (3, 905),
+(3, 911), (3, 912), (3, 913), (3, 914), (3, 915), (3, 916), (3, 917), (3, 918), (3, 919), (3, 920), (3, 921),
+(3, 931), (3, 932);
 
 -- =============================================
 -- 12. 分配角色权限 - 前厅部经理(frontdesk_manager)
 -- =============================================
 INSERT IGNORE INTO sys_role_menu (role_id, menu_id) VALUES
-(4, 500), (4, 501), (4, 502), (4, 503), (4, 504), (4, 505),
-(4, 511), (4, 512), (4, 513), (4, 514), (4, 515), (4, 516), (4, 517), (4, 518), (4, 519), (4, 521),
-(4, 531);
+(4, 900), (4, 901), (4, 902), (4, 903), (4, 904), (4, 905),
+(4, 911), (4, 912), (4, 913), (4, 914), (4, 915), (4, 916), (4, 917), (4, 918), (4, 919), (4, 921),
+(4, 931);
 
 -- =============================================
 -- 13. 分配角色权限 - 普通前台(receptionist)
 -- =============================================
 INSERT IGNORE INTO sys_role_menu (role_id, menu_id) VALUES
-(6, 500), (6, 501), (6, 502), (6, 503), (6, 504),
-(6, 511), (6, 512), (6, 513), (6, 514), (6, 515), (6, 516), (6, 517), (6, 518);
+(6, 900), (6, 901), (6, 902), (6, 903), (6, 904),
+(6, 911), (6, 912), (6, 913), (6, 914), (6, 915), (6, 916), (6, 917), (6, 918);
 
 -- =============================================
 -- 14. 分配角色权限 - 客房部经理(housekeeping_manager)
 -- =============================================
 INSERT IGNORE INTO sys_role_menu (role_id, menu_id) VALUES
-(5, 500), (5, 501), (5, 505),
-(5, 511),
-(5, 531);
+(5, 900), (5, 901), (5, 905),
+(5, 911),
+(5, 931);
 
 -- =============================================
 -- 15. 分配角色权限 - 财务人员(finance_staff)
 -- =============================================
 INSERT IGNORE INTO sys_role_menu (role_id, menu_id) VALUES
-(7, 500), (7, 501), (7, 505),
-(7, 511), (7, 520),
-(7, 531), (7, 532);
+(7, 900), (7, 901), (7, 905),
+(7, 911), (7, 920),
+(7, 931), (7, 932);

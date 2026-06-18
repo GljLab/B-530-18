@@ -21,6 +21,7 @@ services:
       - ./db/migration_20260615_customer_enhance.sql:/docker-entrypoint-initdb.d/05-migration_20260615_customer_enhance.sql:ro
       - ./db/migration_20260616_booking_system.sql:/docker-entrypoint-initdb.d/06-migration_20260616_booking_system.sql:ro
       - ./db/migration_20260616_booking_enhance.sql:/docker-entrypoint-initdb.d/07-migration_20260616_booking_enhance.sql:ro
+      - ./db/migration_20260617_checkin_system.sql:/docker-entrypoint-initdb.d/08-migration_20260617_checkin_system.sql:ro
       
     command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
     healthcheck:
