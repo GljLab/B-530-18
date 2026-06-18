@@ -411,6 +411,28 @@
             <span>对比分析</span>
           </el-menu-item>
         </el-sub-menu>
+
+        <el-sub-menu index="/member" v-if="hasMemberPermission">
+          <template #title>
+            <el-icon><Stamp /></el-icon>
+            <span>会员管理</span>
+          </template>
+
+          <el-menu-item index="/member/level" v-if="hasPermission('member:level:list')">
+            <el-icon><Medal /></el-icon>
+            <span>会员等级管理</span>
+          </el-menu-item>
+
+          <el-menu-item index="/member/list" v-if="hasPermission('member:list')">
+            <el-icon><User /></el-icon>
+            <span>会员列表</span>
+          </el-menu-item>
+
+          <el-menu-item index="/member/statistics" v-if="hasPermission('member:statistics:list')">
+            <el-icon><DataLine /></el-icon>
+            <span>会员统计</span>
+          </el-menu-item>
+        </el-sub-menu>
       </el-menu>
     </el-aside>
     
@@ -478,7 +500,8 @@ import {
   Tools, Document, Edit, Clock, DataLine,
   UserFilled, Plus, PriceTag, Warning, Checked, CopyDocument, Upload,
   Calendar, Search, EditPen, Grid, Monitor, SetUp, Share, List, Money,
-  TrendCharts, Timer, Coin, Histogram, Wallet, Ticket, PieChart
+  TrendCharts, Timer, Coin, Histogram, Wallet, Ticket, PieChart,
+  Stamp, Medal
 } from '@element-plus/icons-vue'
 
 const route = useRoute()
@@ -584,6 +607,12 @@ const hasFinancePermission = computed(() => {
          hasPermission('finance:cashflow:query') ||
          hasPermission('finance:dashboard:query') ||
          hasPermission('finance:comparison:query')
+})
+
+const hasMemberPermission = computed(() => {
+  return hasPermission('member:level:list') ||
+         hasPermission('member:list') ||
+         hasPermission('member:statistics:list')
 })
 
 const toggleCollapse = () => {

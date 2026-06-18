@@ -103,7 +103,7 @@ public class MemberService {
             enrichMemberInfo(member);
         }
 
-        return new PageResult<>(page.getTotalPage(), page.getTotalRow(), records);
+        return new PageResult<>(page.getTotalRow(), records, (long) pageNum, (long) pageSize);
     }
 
     public Member getById(Long id) {
@@ -390,7 +390,7 @@ public class MemberService {
                 .where(MEMBER_POINT_LOG.MEMBER_ID.eq(memberId))
                 .orderBy(MEMBER_POINT_LOG.CREATE_TIME.desc());
         Page<MemberPointLog> page = memberPointLogMapper.paginate(pageNum, pageSize, query);
-        return new PageResult<>(page.getTotalPage(), page.getTotalRow(), page.getRecords());
+        return new PageResult<>(page.getTotalRow(), page.getRecords(), (long) pageNum, (long) pageSize);
     }
 
     public List<MemberLevelLog> getLevelLogs(Long memberId) {
@@ -407,7 +407,7 @@ public class MemberService {
                 .where(MEMBER_LEVEL_LOG.MEMBER_ID.eq(memberId))
                 .orderBy(MEMBER_LEVEL_LOG.CREATE_TIME.desc());
         Page<MemberLevelLog> page = memberLevelLogMapper.paginate(pageNum, pageSize, query);
-        return new PageResult<>(page.getTotalPage(), page.getTotalRow(), page.getRecords());
+        return new PageResult<>(page.getTotalRow(), page.getRecords(), (long) pageNum, (long) pageSize);
     }
 
     public Map<String, Object> getStatistics() {
@@ -447,24 +447,32 @@ public class MemberService {
     }
 
     public List<Map<String, Object>> getLevelDistribution() {
-        QueryWrapper query = QueryWrapper.create()
-                .select(MEMBER_LEVEL.ID, MEMBER_LEVEL.LEVEL_NAME, MEMBER_LEVEL.LEVEL_COLOR,
-                        MEMBER_LEVEL.LEVEL_ICON, MEMBER.ID.count().as("memberCount"))
-                .from(MemberLevel.class)
-                .leftJoin(Member.class).on(MEMBER.LEVEL_ID.eq(MEMBER_LEVEL.ID).and(MEMBER.DELETED.eq(0)))
-                .where(MEMBER_LEVEL.DELETED.eq(0))
-                .groupBy(MEMBER_LEVEL.ID, MEMBER_LEVEL.LEVEL_NAME, MEMBER_LEVEL.LEVEL_COLOR, MEMBER_LEVEL.LEVEL_ICON)
-                .orderBy(MEMBER_LEVEL.SORT_ORDER.asc());
-
-        List<Map<String, Object>> list = memberLevelMapper.selectListByQueryAs(query, Map.class);
+        List<Map<String, Object>> list = new java.util.ArrayList<>();
         long total = memberMapper.selectCountByQuery(
                 QueryWrapper.create().from(Member.class).where(MEMBER.DELETED.eq(0))
         );
 
-        for (Map<String, Object> item : list) {
-            long count = ((Number) item.get("memberCount")).longValue();
-            item.put("count", count);
-            item.put("percentage", total > 0 ? (double) count / total * 100 : 0);
+        QueryWrapper levelQuery = QueryWrapper.create()
+                .from(MemberLevel.class)
+                .where(MEMBER_LEVEL.DELETED.eq(0))
+                .orderBy(MEMBER_LEVEL.SORT_ORDER.asc());
+        List<MemberLevel> levels = memberLevelMapper.selectListByQuery(levelQuery);
+
+        for (MemberLevel level : levels) {
+            long memberCount = memberMapper.selectCountByQuery(
+                    QueryWrapper.create()
+                            .from(Member.class)
+                            .where(MEMBER.DELETED.eq(0))
+                            .and(MEMBER.LEVEL_ID.eq(level.getId()))
+            );
+            Map<String, Object> item = new HashMap<>();
+            item.put("id", level.getId());
+            item.put("levelName", level.getLevelName());
+            item.put("levelColor", level.getLevelColor());
+            item.put("levelIcon", level.getLevelIcon());
+            item.put("count", memberCount);
+            item.put("percentage", total > 0 ? (double) memberCount / total * 100 : 0);
+            list.add(item);
         }
 
         return list;
