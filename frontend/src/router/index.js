@@ -465,6 +465,30 @@ const routes = [
         name: 'ComparisonAnalysis',
         component: () => import('@/views/finance/ComparisonAnalysis.vue'),
         meta: { title: '对比分析', icon: 'DataAnalysis', permission: 'finance:comparison:query' }
+      },
+      {
+        path: 'member/level',
+        name: 'MemberLevelManage',
+        component: () => import('@/views/member/MemberLevelManage.vue'),
+        meta: { title: '会员等级管理', icon: 'Medal', permission: 'member:level:list' }
+      },
+      {
+        path: 'member/list',
+        name: 'MemberList',
+        component: () => import('@/views/member/MemberList.vue'),
+        meta: { title: '会员列表', icon: 'User', permission: 'member:list' }
+      },
+      {
+        path: 'member/detail/:id',
+        name: 'MemberDetail',
+        component: () => import('@/views/member/MemberDetail.vue'),
+        meta: { title: '会员详情', icon: 'View', permission: 'member:query', hidden: true }
+      },
+      {
+        path: 'member/statistics',
+        name: 'MemberStatistics',
+        component: () => import('@/views/member/MemberStatistics.vue'),
+        meta: { title: '会员统计', icon: 'DataLine', permission: 'member:statistics:list' }
       }
     ]
   },

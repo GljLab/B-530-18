@@ -564,6 +564,37 @@ const api = {
       dashboard: () => request.get('/finance/advanced/dashboard'),
       comparison: (params) => request.get('/finance/advanced/comparison', { params })
     }
+  },
+
+  memberLevel: {
+    list: () => request.get('/member/level/list'),
+    listEnabled: () => request.get('/member/level/enabled'),
+    getById: (id) => request.get(`/member/level/${id}`),
+    add: (data) => request.post('/member/level', data),
+    update: (data) => request.put('/member/level', data),
+    delete: (id) => request.delete(`/member/level/${id}`),
+    updateStatus: (id, status) => request.put(`/member/level/${id}/status`, null, { params: { status } })
+  },
+
+  member: {
+    page: (params) => request.get('/member/page', { params }),
+    getById: (id) => request.get(`/member/${id}`),
+    getByCustomerId: (customerId) => request.get(`/member/customer/${customerId}`),
+    getByMemberNo: (memberNo) => request.get(`/member/no/${memberNo}`),
+    registerFromCustomer: (data) => request.post('/member/register/fromCustomer', data),
+    registerNew: (data) => request.post('/member/register/new', data),
+    update: (data) => request.put('/member', data),
+    addPoints: (data) => request.post('/member/points/add', data),
+    usePoints: (data) => request.post('/member/points/use', data),
+    adjustLevel: (data) => request.post('/member/level/adjust', data),
+    freeze: (id, data) => request.put(`/member/${id}/freeze`, data),
+    unfreeze: (id, data) => request.put(`/member/${id}/unfreeze`, data),
+    pointLogs: (id) => request.get(`/member/${id}/pointLogs`),
+    pointLogPage: (id, params) => request.get(`/member/${id}/pointLogs/page`, { params }),
+    levelLogs: (id) => request.get(`/member/${id}/levelLogs`),
+    levelLogPage: (id, params) => request.get(`/member/${id}/levelLogs/page`, { params }),
+    statistics: () => request.get('/member/statistics'),
+    batchAddPoints: (data) => request.post('/member/points/batchAdd', data)
   }
 }
 
