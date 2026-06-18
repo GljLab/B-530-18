@@ -277,7 +277,7 @@ INSERT INTO sys_role_menu (role_id, menu_id) VALUES
 -- =============================================
 -- 20. 新增财务经理角色(role_id=8): 所有财务权限+审批坏账核销+查看成本利润
 -- =============================================
-INSERT INTO sys_role (id, role_name, role_code, status, sort, remark) VALUES
+INSERT INTO sys_role (id, role_name, role_key, status, order_num, remark) VALUES
 (8, '财务经理', 'finance_manager', 1, 7, '财务经理，拥有所有财务权限，可审批坏账核销，查看成本利润')
 ON DUPLICATE KEY UPDATE role_name = VALUES(role_name);
 
