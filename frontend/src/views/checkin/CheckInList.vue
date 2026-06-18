@@ -418,7 +418,7 @@ const loadData = async () => {
     }
     const res = await api.checkin.list(params)
     if (res.code === 200) {
-      tableData.value = res.data.records
+      tableData.value = res.data.list
       pagination.total = res.data.total
     }
   } catch (e) {

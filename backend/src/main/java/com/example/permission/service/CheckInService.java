@@ -221,11 +221,15 @@ public class CheckInService {
         checkIn.setOperatorId(user.getUserId());
         checkIn.setOperatorName(user.getUsername());
         checkIn.setRemark(remark);
+        checkIn.setCreateTime(LocalDateTime.now());
+        checkIn.setUpdateTime(LocalDateTime.now());
         checkInMapper.insert(checkIn);
 
         for (CheckInGuest guest : guests) {
             guest.setCheckInId(checkIn.getId());
             guest.setCheckInNo(checkIn.getCheckInNo());
+            guest.setCreateTime(LocalDateTime.now());
+            guest.setUpdateTime(LocalDateTime.now());
             checkInGuestMapper.insert(guest);
         }
 
@@ -374,11 +378,15 @@ public class CheckInService {
         checkIn.setOperatorId(user.getUserId());
         checkIn.setOperatorName(user.getUsername());
         checkIn.setRemark(remark);
+        checkIn.setCreateTime(LocalDateTime.now());
+        checkIn.setUpdateTime(LocalDateTime.now());
         checkInMapper.insert(checkIn);
 
         for (CheckInGuest guest : guests) {
             guest.setCheckInId(checkIn.getId());
             guest.setCheckInNo(checkIn.getCheckInNo());
+            guest.setCreateTime(LocalDateTime.now());
+            guest.setUpdateTime(LocalDateTime.now());
             checkInGuestMapper.insert(guest);
         }
 

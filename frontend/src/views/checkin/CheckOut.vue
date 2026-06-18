@@ -440,7 +440,7 @@ const searchCheckIns = async () => {
     }
     const res = await api.checkin.list(params)
     if (res.code === 200) {
-      checkInList.value = res.data.records || []
+      checkInList.value = res.data.list || []
       total.value = res.data.total || 0
     }
   } catch (e) {
