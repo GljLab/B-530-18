@@ -526,6 +526,43 @@ const api = {
     statistics: {
       paymentSummary: (params) => request.get('/finance/statistics/payment-summary', { params }),
       receivableMonitor: () => request.get('/finance/statistics/receivable-monitor')
+    },
+
+    invoice: {
+      page: (params) => request.get('/finance/invoice/page', { params }),
+      get: (id) => request.get(`/finance/invoice/${id}`),
+      add: (data) => request.post('/finance/invoice', data),
+      process: (id, data) => request.put(`/finance/invoice/${id}/process`, null, { params: data }),
+      mail: (id, data) => request.put(`/finance/invoice/${id}/mail`, null, { params: data }),
+      statistics: (params) => request.get('/finance/invoice/statistics', { params }),
+      export: (params) => request.get('/finance/invoice/export', { params })
+    },
+
+    badDebt: {
+      page: (params) => request.get('/finance/bad-debt/page', { params }),
+      get: (id) => request.get(`/finance/bad-debt/${id}`),
+      actions: (id) => request.get(`/finance/bad-debt/${id}/actions`),
+      identify: () => request.post('/finance/bad-debt/identify'),
+      collect: (id, data) => request.post(`/finance/bad-debt/${id}/collect`, null, { params: data }),
+      recover: (id, data) => request.post(`/finance/bad-debt/${id}/recover`, null, { params: data }),
+      writeoff: (id, data) => request.put(`/finance/bad-debt/${id}/writeoff`, null, { params: data }),
+      legal: (id, data) => request.put(`/finance/bad-debt/${id}/legal`, null, { params: data }),
+      statistics: () => request.get('/finance/bad-debt/statistics'),
+      export: (params) => request.get('/finance/bad-debt/export', { params })
+    },
+
+    advanced: {
+      collectionDetail: (params) => request.get('/finance/advanced/collection/detail', { params }),
+      collectionTrend: (params) => request.get('/finance/advanced/collection/trend', { params }),
+      paymentMethodAnalysis: (params) => request.get('/finance/advanced/payment-method/analysis', { params }),
+      cashierStatistics: (params) => request.get('/finance/advanced/cashier/statistics', { params }),
+      cashierDetail: (cashierId, params) => request.get(`/finance/advanced/cashier/${cashierId}/detail`, { params }),
+      revenueAnalysis: (params) => request.get('/finance/advanced/revenue/analysis', { params }),
+      costProfitAnalysis: (params) => request.get('/finance/advanced/cost-profit/analysis', { params }),
+      receivableAnalysis: (params) => request.get('/finance/advanced/receivable/analysis', { params }),
+      cashFlowAnalysis: (params) => request.get('/finance/advanced/cashflow/analysis', { params }),
+      dashboard: () => request.get('/finance/advanced/dashboard'),
+      comparison: (params) => request.get('/finance/advanced/comparison', { params })
     }
   }
 }

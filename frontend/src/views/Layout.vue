@@ -355,6 +355,61 @@
             <el-icon><Warning /></el-icon>
             <span>应收账款监控</span>
           </el-menu-item>
+
+          <el-menu-item index="/finance/invoice" v-if="hasPermission('finance:invoice:query')">
+            <el-icon><Ticket /></el-icon>
+            <span>发票管理</span>
+          </el-menu-item>
+
+          <el-menu-item index="/finance/collectionDetail" v-if="hasPermission('finance:collection:query')">
+            <el-icon><List /></el-icon>
+            <span>收款明细报表</span>
+          </el-menu-item>
+
+          <el-menu-item index="/finance/collectionTrend" v-if="hasPermission('finance:collection:query')">
+            <el-icon><TrendCharts /></el-icon>
+            <span>收款趋势分析</span>
+          </el-menu-item>
+
+          <el-menu-item index="/finance/paymentMethod" v-if="hasPermission('finance:collection:query')">
+            <el-icon><PieChart /></el-icon>
+            <span>支付方式分析</span>
+          </el-menu-item>
+
+          <el-menu-item index="/finance/cashierStats" v-if="hasPermission('finance:cashier:query')">
+            <el-icon><User /></el-icon>
+            <span>收款人员统计</span>
+          </el-menu-item>
+
+          <el-menu-item index="/finance/badDebt" v-if="hasPermission('finance:badDebt:query')">
+            <el-icon><Warning /></el-icon>
+            <span>坏账管理</span>
+          </el-menu-item>
+
+          <el-menu-item index="/finance/revenueAnalysis" v-if="hasPermission('finance:revenue:query')">
+            <el-icon><Coin /></el-icon>
+            <span>营收分析</span>
+          </el-menu-item>
+
+          <el-menu-item index="/finance/receivableAnalysis" v-if="hasPermission('finance:receivable:query')">
+            <el-icon><DataLine /></el-icon>
+            <span>应收账款分析</span>
+          </el-menu-item>
+
+          <el-menu-item index="/finance/cashFlow" v-if="hasPermission('finance:cashflow:query')">
+            <el-icon><Money /></el-icon>
+            <span>现金流分析</span>
+          </el-menu-item>
+
+          <el-menu-item index="/finance/dashboard" v-if="hasPermission('finance:dashboard:query')">
+            <el-icon><Monitor /></el-icon>
+            <span>财务总览看板</span>
+          </el-menu-item>
+
+          <el-menu-item index="/finance/comparison" v-if="hasPermission('finance:comparison:query')">
+            <el-icon><DataAnalysis /></el-icon>
+            <span>对比分析</span>
+          </el-menu-item>
         </el-sub-menu>
       </el-menu>
     </el-aside>
@@ -423,7 +478,7 @@ import {
   Tools, Document, Edit, Clock, DataLine,
   UserFilled, Plus, PriceTag, Warning, Checked, CopyDocument, Upload,
   Calendar, Search, EditPen, Grid, Monitor, SetUp, Share, List, Money,
-  TrendCharts, Timer, Coin, Histogram, Wallet
+  TrendCharts, Timer, Coin, Histogram, Wallet, Ticket, PieChart
 } from '@element-plus/icons-vue'
 
 const route = useRoute()
@@ -520,7 +575,15 @@ const hasFinancePermission = computed(() => {
          hasPermission('finance:daily:query') ||
          hasPermission('finance:shift:query') ||
          hasPermission('finance:summary:query') ||
-         hasPermission('finance:receivable:query')
+         hasPermission('finance:receivable:query') ||
+         hasPermission('finance:invoice:query') ||
+         hasPermission('finance:collection:query') ||
+         hasPermission('finance:cashier:query') ||
+         hasPermission('finance:badDebt:query') ||
+         hasPermission('finance:revenue:query') ||
+         hasPermission('finance:cashflow:query') ||
+         hasPermission('finance:dashboard:query') ||
+         hasPermission('finance:comparison:query')
 })
 
 const toggleCollapse = () => {

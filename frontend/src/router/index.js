@@ -399,6 +399,72 @@ const routes = [
         name: 'ReceivableMonitor',
         component: () => import('@/views/finance/ReceivableMonitor.vue'),
         meta: { title: '应收账款监控', icon: 'Warning', permission: 'finance:receivable:query' }
+      },
+      {
+        path: 'finance/invoice',
+        name: 'InvoiceManage',
+        component: () => import('@/views/finance/InvoiceManage.vue'),
+        meta: { title: '发票管理', icon: 'Ticket', permission: 'finance:invoice:query' }
+      },
+      {
+        path: 'finance/collectionDetail',
+        name: 'CollectionDetail',
+        component: () => import('@/views/finance/CollectionDetail.vue'),
+        meta: { title: '收款明细报表', icon: 'List', permission: 'finance:collection:query' }
+      },
+      {
+        path: 'finance/collectionTrend',
+        name: 'CollectionTrend',
+        component: () => import('@/views/finance/CollectionTrend.vue'),
+        meta: { title: '收款趋势分析', icon: 'TrendCharts', permission: 'finance:collection:query' }
+      },
+      {
+        path: 'finance/paymentMethod',
+        name: 'PaymentMethodAnalysis',
+        component: () => import('@/views/finance/PaymentMethodAnalysis.vue'),
+        meta: { title: '支付方式分析', icon: 'PieChart', permission: 'finance:collection:query' }
+      },
+      {
+        path: 'finance/cashierStats',
+        name: 'CashierStatistics',
+        component: () => import('@/views/finance/CashierStatistics.vue'),
+        meta: { title: '收款人员统计', icon: 'User', permission: 'finance:cashier:query' }
+      },
+      {
+        path: 'finance/badDebt',
+        name: 'BadDebtManage',
+        component: () => import('@/views/finance/BadDebtManage.vue'),
+        meta: { title: '坏账管理', icon: 'Warning', permission: 'finance:badDebt:query' }
+      },
+      {
+        path: 'finance/revenueAnalysis',
+        name: 'RevenueAnalysisFinance',
+        component: () => import('@/views/finance/RevenueAnalysis.vue'),
+        meta: { title: '营收分析', icon: 'Coin', permission: 'finance:revenue:query' }
+      },
+      {
+        path: 'finance/receivableAnalysis',
+        name: 'ReceivableAnalysis',
+        component: () => import('@/views/finance/ReceivableAnalysis.vue'),
+        meta: { title: '应收账款分析', icon: 'DataLine', permission: 'finance:receivable:query' }
+      },
+      {
+        path: 'finance/cashFlow',
+        name: 'CashFlowAnalysis',
+        component: () => import('@/views/finance/CashFlowAnalysis.vue'),
+        meta: { title: '现金流分析', icon: 'Money', permission: 'finance:cashflow:query' }
+      },
+      {
+        path: 'finance/dashboard',
+        name: 'FinanceDashboard',
+        component: () => import('@/views/finance/FinanceDashboard.vue'),
+        meta: { title: '财务总览看板', icon: 'Monitor', permission: 'finance:dashboard:query' }
+      },
+      {
+        path: 'finance/comparison',
+        name: 'ComparisonAnalysis',
+        component: () => import('@/views/finance/ComparisonAnalysis.vue'),
+        meta: { title: '对比分析', icon: 'DataAnalysis', permission: 'finance:comparison:query' }
       }
     ]
   },
