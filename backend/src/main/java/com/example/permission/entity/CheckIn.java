@@ -108,6 +108,14 @@ public class CheckIn {
 
     private String remark;
 
+    private Long agreementUnitId;
+
+    private String agreementUnitName;
+
+    private Integer guaranteeType;
+
+    private Integer isCredit;
+
     private LocalDateTime createTime;
 
     private LocalDateTime updateTime;

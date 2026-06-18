@@ -265,7 +265,55 @@
             label-width="110px"
             label-position="right"
           >
+            <el-divider content-position="left">担保方式</el-divider>
+            <el-row :gutter="24">
+              <el-col :span="12">
+                <el-form-item label="担保方式" prop="guaranteeType">
+                  <el-select v-model="step4Form.guaranteeType" placeholder="请选择担保方式" style="width: 100%" @change="handleGuaranteeTypeChange">
+                    <el-option label="现金担保" :value="1" />
+                    <el-option label="协议挂账" :value="2" />
+                  </el-select>
+                </el-form-item>
+              </el-col>
+              <el-col :span="12" v-if="step4Form.guaranteeType === 2">
+                <el-form-item label="协议单位" prop="agreementUnitId">
+                  <el-select v-model="step4Form.agreementUnitId" placeholder="请选择协议单位" style="width: 100%" filterable @change="handleAgreementUnitChange">
+                    <el-option
+                      v-for="item in agreementUnitList"
+                      :key="item.id"
+                      :label="item.unitName"
+                      :value="item.id"
+                    >
+                      <span>{{ item.unitName }}</span>
+                      <span style="float: right; color: #8492a6; font-size: 12px">额度: ¥{{ item.creditLimit }} | 欠款: ¥{{ item.currentDebt }}</span>
+                    </el-option>
+                  </el-select>
+                </el-form-item>
+              </el-col>
+            </el-row>
+            <el-alert
+              v-if="selectedAgreementUnit && step4Form.guaranteeType === 2"
+              :title="`协议单位：${selectedAgreementUnit.unitName}，信用额度：¥${selectedAgreementUnit.creditLimit}，当前欠款：¥${selectedAgreementUnit.currentDebt}，协议折扣：${formatDiscount(selectedAgreementUnit.discountRate)}`"
+              type="info"
+              :closable="false"
+              style="margin-bottom: 16px"
+            />
+            <el-alert
+              v-if="creditLimitExceeded"
+              title="该单位信用额度不足，无法挂账"
+              type="error"
+              :closable="false"
+              style="margin-bottom: 16px"
+            />
+
             <el-divider content-position="left">押金信息</el-divider>
+            <el-alert
+              v-if="step4Form.guaranteeType === 2"
+              title="协议挂账模式，押金可以减免或只收取少量押金"
+              type="warning"
+              :closable="false"
+              style="margin-bottom: 16px"
+            />
             <el-row :gutter="24">
               <el-col :span="12">
                 <el-form-item label="押金金额" prop="depositAmount">
@@ -444,6 +492,32 @@
                 </div>
               </el-card>
             </el-col>
+
+            <el-col :span="12" v-if="step4Form.guaranteeType === 2 && selectedAgreementUnit">
+              <el-card class="confirm-card" shadow="hover">
+                <template #header>
+                  <span class="confirm-card-title">
+                    <el-icon><OfficeBuilding /></el-icon> 协议挂账信息
+                  </span>
+                </template>
+                <div class="confirm-item">
+                  <span class="confirm-label">协议单位：</span>
+                  <span class="confirm-value">{{ selectedAgreementUnit.unitName }}</span>
+                </div>
+                <div class="confirm-item">
+                  <span class="confirm-label">信用额度：</span>
+                  <span class="confirm-value">¥{{ selectedAgreementUnit.creditLimit }}</span>
+                </div>
+                <div class="confirm-item">
+                  <span class="confirm-label">当前欠款：</span>
+                  <span class="confirm-value" style="color: #f56c6c">¥{{ selectedAgreementUnit.currentDebt }}</span>
+                </div>
+                <div class="confirm-item">
+                  <span class="confirm-label">协议折扣：</span>
+                  <span class="confirm-value">{{ formatDiscount(selectedAgreementUnit.discountRate) }}</span>
+                </div>
+              </el-card>
+            </el-col>
           </el-row>
         </div>
       </div>
@@ -479,7 +553,7 @@ import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import {
   Plus, Check, Search, Delete, ArrowLeft, ArrowRight,
-  House, User, Wallet, CircleCheck, Files
+  House, User, Wallet, CircleCheck, Files, OfficeBuilding
 } from '@element-plus/icons-vue'
 import api from '@/api'
 
@@ -526,8 +600,14 @@ const step4Form = reactive({
   depositType: '1',
   voucherNo: '',
   keyCardCount: 1,
-  remark: ''
+  remark: '',
+  agreementUnitId: null,
+  guaranteeType: 1
 })
+
+const agreementUnitList = ref([])
+const selectedAgreementUnit = ref(null)
+const creditLimitExceeded = ref(false)
 
 const step1Rules = {
   checkinDate: [{ required: true, message: '请选择入住日期', trigger: 'change' }],
@@ -651,6 +731,40 @@ const removeRoommate = (index) => {
   step3Form.roommates.splice(index, 1)
 }
 
+const loadAgreementUnits = async () => {
+  try {
+    const res = await api.finance.agreementUnit.list()
+    if (res.code === 200) {
+      agreementUnitList.value = res.data || []
+    }
+  } catch {
+    agreementUnitList.value = []
+  }
+}
+
+const handleGuaranteeTypeChange = (val) => {
+  if (val === 2) {
+    loadAgreementUnits()
+  } else {
+    step4Form.agreementUnitId = null
+    selectedAgreementUnit.value = null
+    creditLimitExceeded.value = false
+  }
+}
+
+const handleAgreementUnitChange = (val) => {
+  selectedAgreementUnit.value = agreementUnitList.value.find(u => u.id === val)
+  if (selectedAgreementUnit.value) {
+    const roomTotal = selectedRoom.value?.price ? selectedRoom.value.price * stayDays.value : 0
+    creditLimitExceeded.value = (selectedAgreementUnit.value.currentDebt + roomTotal) > selectedAgreementUnit.value.creditLimit
+  }
+}
+
+const formatDiscount = (rate) => {
+  if (!rate || rate >= 1) return '无折扣'
+  return (rate * 10).toFixed(1).replace(/\.0$/, '') + '折'
+}
+
 const validateStep = async (step) => {
   if (step === 0) {
     if (!selectedRoom.value) {
@@ -735,7 +849,9 @@ const handleSubmit = async () => {
       depositMethod: step4Form.depositType,
       depositVoucherNo: step4Form.voucherNo,
       keyCardCount: step4Form.keyCardCount,
-      remark: step4Form.remark
+      remark: step4Form.remark,
+      agreementUnitId: step4Form.agreementUnitId,
+      guaranteeType: step4Form.guaranteeType
     }
     const res = await api.checkin.walkInCheckIn(payload)
     if (res.code === 200) {

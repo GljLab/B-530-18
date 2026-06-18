@@ -3,6 +3,8 @@ package com.example.permission.service;
 import com.example.permission.common.BusinessException;
 import com.example.permission.common.PageResult;
 import com.example.permission.entity.*;
+import com.example.permission.mapper.AgreementUnitMapper;
+import com.example.permission.mapper.CreditBillMapper;
 import com.example.permission.mapper.*;
 import com.example.permission.security.LoginUser;
 import com.mybatisflex.core.paginate.Page;
@@ -78,6 +80,15 @@ public class CheckInService {
 
     @Autowired
     private BookingService bookingService;
+
+    @Autowired
+    private AgreementUnitMapper agreementUnitMapper;
+
+    @Autowired
+    private CreditBillMapper creditBillMapper;
+
+    @Autowired
+    private CreditBillService creditBillService;
 
     private LoginUser getCurrentUser() {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -280,7 +291,8 @@ public class CheckInService {
     public CheckIn walkInCheckIn(Long roomTypeId, Long roomId, Customer customer, List<CheckInGuest> guests,
                                   LocalDate checkInDate, LocalDate checkOutDate,
                                   BigDecimal depositAmount, Integer depositMethod, String depositVoucherNo,
-                                  Integer keyCardCount, String specialRequirements, String remark, Integer bookingSource) {
+                                  Integer keyCardCount, String specialRequirements, String remark, Integer bookingSource,
+                                  Long agreementUnitId, Integer guaranteeType) {
         LoginUser user = getCurrentUser();
 
         Room room = roomMapper.selectOneById(roomId);
@@ -378,6 +390,28 @@ public class CheckInService {
         checkIn.setOperatorId(user.getUserId());
         checkIn.setOperatorName(user.getUsername());
         checkIn.setRemark(remark);
+        if (agreementUnitId != null && guaranteeType != null && guaranteeType == 2) {
+            AgreementUnit unit = agreementUnitMapper.selectOneById(agreementUnitId);
+            if (unit == null) {
+                throw new BusinessException("协议单位不存在");
+            }
+            if (unit.getStatus() != 1) {
+                throw new BusinessException("协议单位已禁用");
+            }
+            if (unit.getCurrentDebt().add(roomTotal).compareTo(unit.getCreditLimit()) > 0) {
+                throw new BusinessException("该单位信用额度不足，当前欠款" + unit.getCurrentDebt() + "元，信用额度" + unit.getCreditLimit() + "元");
+            }
+            checkIn.setAgreementUnitId(agreementUnitId);
+            checkIn.setAgreementUnitName(unit.getUnitName());
+            checkIn.setGuaranteeType(guaranteeType);
+            checkIn.setIsCredit(1);
+            if (unit.getDiscountRate() != null && unit.getDiscountRate().compareTo(BigDecimal.ONE) < 0) {
+                BigDecimal discountAmount = roomTotal.multiply(BigDecimal.ONE.subtract(unit.getDiscountRate()));
+                checkIn.setDiscount(discountAmount);
+                checkIn.setTotalAmount(roomTotal.subtract(discountAmount));
+                checkIn.setPayableAmount(checkIn.getTotalAmount());
+            }
+        }
         checkIn.setCreateTime(LocalDateTime.now());
         checkIn.setUpdateTime(LocalDateTime.now());
         checkInMapper.insert(checkIn);
@@ -932,6 +966,23 @@ public class CheckInService {
         checkIn.setCheckOutOperatorId(user.getUserId());
         checkIn.setCheckOutOperatorName(user.getUsername());
         checkInMapper.update(checkIn);
+
+        if (checkIn.getIsCredit() != null && checkIn.getIsCredit() == 1 && checkIn.getAgreementUnitId() != null) {
+            CreditBill creditBill = new CreditBill();
+            creditBill.setAgreementUnitId(checkIn.getAgreementUnitId());
+            creditBill.setAgreementUnitName(checkIn.getAgreementUnitName());
+            creditBill.setCheckInId(checkInId);
+            creditBill.setCheckInNo(checkIn.getCheckInNo());
+            creditBill.setCustomerName(checkIn.getCustomerName());
+            creditBill.setRoomNumber(checkIn.getRoomNumber());
+            creditBill.setCheckInDate(checkIn.getCheckInDate());
+            creditBill.setCheckOutDate(checkOutDate);
+            creditBill.setRoomFee(roomTotal);
+            creditBill.setExtraFee(extraBedTotal.add(otherFee));
+            creditBill.setDiscountAmount(discount);
+            creditBill.setTotalAmount(totalAmount);
+            creditBillService.createCreditBill(creditBill);
+        }
 
         Room room = roomMapper.selectOneById(checkIn.getRoomId());
         Integer oldRoomStatus = room.getStatus();

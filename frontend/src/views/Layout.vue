@@ -314,6 +314,48 @@
             <span>入住统计</span>
           </el-menu-item>
         </el-sub-menu>
+
+        <el-sub-menu index="/finance" v-if="hasFinancePermission">
+          <template #title>
+            <el-icon><Wallet /></el-icon>
+            <span>财务管理</span>
+          </template>
+
+          <el-menu-item index="/finance/agreement" v-if="hasPermission('finance:agreement:query')">
+            <el-icon><OfficeBuilding /></el-icon>
+            <span>协议单位管理</span>
+          </el-menu-item>
+
+          <el-menu-item index="/finance/settlement" v-if="hasPermission('finance:settlement:query')">
+            <el-icon><Wallet /></el-icon>
+            <span>挂账结算</span>
+          </el-menu-item>
+
+          <el-menu-item index="/finance/refund" v-if="hasPermission('finance:refund:query')">
+            <el-icon><Money /></el-icon>
+            <span>退款审批</span>
+          </el-menu-item>
+
+          <el-menu-item index="/finance/daily" v-if="hasPermission('finance:daily:query')">
+            <el-icon><Calendar /></el-icon>
+            <span>日结对账</span>
+          </el-menu-item>
+
+          <el-menu-item index="/finance/shift" v-if="hasPermission('finance:shift:query')">
+            <el-icon><SwitchButton /></el-icon>
+            <span>交接班</span>
+          </el-menu-item>
+
+          <el-menu-item index="/finance/summary" v-if="hasPermission('finance:summary:query')">
+            <el-icon><DataLine /></el-icon>
+            <span>收款汇总</span>
+          </el-menu-item>
+
+          <el-menu-item index="/finance/receivable" v-if="hasPermission('finance:receivable:query')">
+            <el-icon><Warning /></el-icon>
+            <span>应收账款监控</span>
+          </el-menu-item>
+        </el-sub-menu>
       </el-menu>
     </el-aside>
     
@@ -381,7 +423,7 @@ import {
   Tools, Document, Edit, Clock, DataLine,
   UserFilled, Plus, PriceTag, Warning, Checked, CopyDocument, Upload,
   Calendar, Search, EditPen, Grid, Monitor, SetUp, Share, List, Money,
-  TrendCharts, Timer, Coin, Histogram
+  TrendCharts, Timer, Coin, Histogram, Wallet
 } from '@element-plus/icons-vue'
 
 const route = useRoute()
@@ -469,6 +511,16 @@ const hasCheckinPermission = computed(() => {
          hasPermission('checkin:walkin') ||
          hasPermission('checkin:checkout') ||
          hasPermission('checkin:statistics:list')
+})
+
+const hasFinancePermission = computed(() => {
+  return hasPermission('finance:agreement:query') ||
+         hasPermission('finance:settlement:query') ||
+         hasPermission('finance:refund:query') ||
+         hasPermission('finance:daily:query') ||
+         hasPermission('finance:shift:query') ||
+         hasPermission('finance:summary:query') ||
+         hasPermission('finance:receivable:query')
 })
 
 const toggleCollapse = () => {

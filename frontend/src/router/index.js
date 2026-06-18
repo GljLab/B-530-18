@@ -357,6 +357,48 @@ const routes = [
         name: 'CheckInStatistics',
         component: () => import('@/views/checkin/CheckInStatistics.vue'),
         meta: { title: '入住统计', icon: 'DataLine', permission: 'checkin:statistics:list' }
+      },
+      {
+        path: 'finance/agreement',
+        name: 'AgreementUnitManage',
+        component: () => import('@/views/finance/AgreementUnitManage.vue'),
+        meta: { title: '协议单位管理', icon: 'OfficeBuilding', permission: 'finance:agreement:query' }
+      },
+      {
+        path: 'finance/settlement',
+        name: 'CreditSettlement',
+        component: () => import('@/views/finance/CreditSettlement.vue'),
+        meta: { title: '挂账结算', icon: 'Wallet', permission: 'finance:settlement:query' }
+      },
+      {
+        path: 'finance/refund',
+        name: 'RefundApproval',
+        component: () => import('@/views/finance/RefundApproval.vue'),
+        meta: { title: '退款审批', icon: 'Money', permission: 'finance:refund:query' }
+      },
+      {
+        path: 'finance/daily',
+        name: 'DailyReconciliation',
+        component: () => import('@/views/finance/DailyReconciliation.vue'),
+        meta: { title: '日结对账', icon: 'Calendar', permission: 'finance:daily:query' }
+      },
+      {
+        path: 'finance/shift',
+        name: 'ShiftReconciliation',
+        component: () => import('@/views/finance/ShiftReconciliation.vue'),
+        meta: { title: '交接班', icon: 'SwitchButton', permission: 'finance:shift:query' }
+      },
+      {
+        path: 'finance/summary',
+        name: 'PaymentSummary',
+        component: () => import('@/views/finance/PaymentSummary.vue'),
+        meta: { title: '收款汇总', icon: 'DataLine', permission: 'finance:summary:query' }
+      },
+      {
+        path: 'finance/receivable',
+        name: 'ReceivableMonitor',
+        component: () => import('@/views/finance/ReceivableMonitor.vue'),
+        meta: { title: '应收账款监控', icon: 'Warning', permission: 'finance:receivable:query' }
       }
     ]
   },

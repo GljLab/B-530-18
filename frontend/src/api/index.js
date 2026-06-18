@@ -480,6 +480,53 @@ const api = {
       region: () => request.get('/checkin/statistics/region'),
       occupancyRate: (days) => request.get('/checkin/statistics/occupancyRate', { params: { days } })
     }
+  },
+
+  finance: {
+    agreementUnit: {
+      page: (params) => request.get('/finance/agreement-unit/page', { params }),
+      list: () => request.get('/finance/agreement-unit/list'),
+      get: (id) => request.get(`/finance/agreement-unit/${id}`),
+      add: (data) => request.post('/finance/agreement-unit', data),
+      update: (data) => request.put('/finance/agreement-unit', data),
+      delete: (id) => request.delete(`/finance/agreement-unit/${id}`),
+      updateStatus: (id, data) => request.put(`/finance/agreement-unit/${id}/status`, data)
+    },
+
+    creditSettlement: {
+      page: (params) => request.get('/finance/credit-settlement/page', { params }),
+      get: (id) => request.get(`/finance/credit-settlement/${id}`),
+      bills: (params) => request.get('/finance/credit-settlement/bills', { params }),
+      create: (data) => request.post('/finance/credit-settlement', data),
+      confirm: (id) => request.put(`/finance/credit-settlement/${id}/confirm`)
+    },
+
+    refundApply: {
+      page: (params) => request.get('/finance/refund-apply/page', { params }),
+      get: (id) => request.get(`/finance/refund-apply/${id}`),
+      apply: (data) => request.post('/finance/refund-apply', data),
+      approve: (id, data) => request.put(`/finance/refund-apply/${id}/approve`, data),
+      execute: (id, data) => request.put(`/finance/refund-apply/${id}/execute`, data)
+    },
+
+    dailyReconciliation: {
+      page: (params) => request.get('/finance/daily-reconciliation/page', { params }),
+      getByDate: (date) => request.get(`/finance/daily-reconciliation/date/${date}`),
+      autoCalculate: (data) => request.post('/finance/daily-reconciliation/auto-calculate', data),
+      confirm: (id, data) => request.put(`/finance/daily-reconciliation/${id}/confirm`, data)
+    },
+
+    shiftReconciliation: {
+      page: (params) => request.get('/finance/shift-reconciliation/page', { params }),
+      get: (id) => request.get(`/finance/shift-reconciliation/${id}`),
+      create: (data) => request.post('/finance/shift-reconciliation', data),
+      takeover: (id, data) => request.put(`/finance/shift-reconciliation/${id}/takeover`, data)
+    },
+
+    statistics: {
+      paymentSummary: (params) => request.get('/finance/statistics/payment-summary', { params }),
+      receivableMonitor: () => request.get('/finance/statistics/receivable-monitor')
+    }
   }
 }
 
