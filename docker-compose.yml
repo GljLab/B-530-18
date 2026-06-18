@@ -24,6 +24,7 @@ services:
       - ./db/migration_20260617_checkin_system.sql:/docker-entrypoint-initdb.d/08-migration_20260617_checkin_system.sql:ro
       - ./db/migration_20260618_finance.sql:/docker-entrypoint-initdb.d/09-migration_20260618_finance.sql:ro
       - ./db/migration_20260618_finance_advanced.sql:/docker-entrypoint-initdb.d/10-migration_20260618_finance_advanced.sql:ro
+      - ./db/migration_20260618_member_system.sql:/docker-entrypoint-initdb.d/11-migration_20260618_member_system.sql:ro
       
     command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
     healthcheck:
