@@ -586,15 +586,45 @@ const api = {
     update: (data) => request.put('/member', data),
     addPoints: (data) => request.post('/member/points/add', data),
     usePoints: (data) => request.post('/member/points/use', data),
+    earnPointsOnCheckout: (data) => request.post('/member/points/earnOnCheckout', data),
+    usePointsWithRule: (data) => request.post('/member/points/useWithRule', data),
     adjustLevel: (data) => request.post('/member/level/adjust', data),
     freeze: (id, data) => request.put(`/member/${id}/freeze`, data),
     unfreeze: (id, data) => request.put(`/member/${id}/unfreeze`, data),
     pointLogs: (id) => request.get(`/member/${id}/pointLogs`),
     pointLogPage: (id, params) => request.get(`/member/${id}/pointLogs/page`, { params }),
+    pointLogPageFiltered: (id, params) => request.get(`/member/${id}/pointLogs/filtered`, { params }),
+    pointSummary: (id) => request.get(`/member/${id}/pointSummary`),
     levelLogs: (id) => request.get(`/member/${id}/levelLogs`),
     levelLogPage: (id, params) => request.get(`/member/${id}/levelLogs/page`, { params }),
     statistics: () => request.get('/member/statistics'),
     batchAddPoints: (data) => request.post('/member/points/batchAdd', data)
+  },
+
+  pointRule: {
+    earnList: () => request.get('/member/pointRule/earn/list'),
+    earnEnabled: () => request.get('/member/pointRule/earn/enabled'),
+    earnGetById: (id) => request.get(`/member/pointRule/earn/${id}`),
+    earnAdd: (data) => request.post('/member/pointRule/earn', data),
+    earnUpdate: (data) => request.put('/member/pointRule/earn', data),
+    earnDelete: (id) => request.delete(`/member/pointRule/earn/${id}`),
+    earnUpdateStatus: (id, status) => request.put(`/member/pointRule/earn/${id}/status`, null, { params: { status } }),
+
+    consumeList: () => request.get('/member/pointRule/consume/list'),
+    consumeEnabled: () => request.get('/member/pointRule/consume/enabled'),
+    consumeGetById: (id) => request.get(`/member/pointRule/consume/${id}`),
+    consumeAdd: (data) => request.post('/member/pointRule/consume', data),
+    consumeUpdate: (data) => request.put('/member/pointRule/consume', data),
+    consumeDelete: (id) => request.delete(`/member/pointRule/consume/${id}`),
+    consumeUpdateStatus: (id, status) => request.put(`/member/pointRule/consume/${id}/status`, null, { params: { status } })
+  },
+
+  pointStatistics: {
+    overview: () => request.get('/member/pointStatistics/overview'),
+    source: () => request.get('/member/pointStatistics/source'),
+    usage: () => request.get('/member/pointStatistics/usage'),
+    trend: (months) => request.get('/member/pointStatistics/trend', { params: { months } }),
+    conversion: () => request.get('/member/pointStatistics/conversion')
   }
 }
 

@@ -428,9 +428,24 @@
             <span>会员列表</span>
           </el-menu-item>
 
+          <el-menu-item index="/member/pointRule" v-if="hasPermission('member:pointRule:list')">
+            <el-icon><SetUp /></el-icon>
+            <span>积分规则管理</span>
+          </el-menu-item>
+
+          <el-menu-item index="/member/points" v-if="hasPermission('member:point:list')">
+            <el-icon><Coin /></el-icon>
+            <span>积分明细</span>
+          </el-menu-item>
+
           <el-menu-item index="/member/statistics" v-if="hasPermission('member:statistics:list')">
             <el-icon><DataLine /></el-icon>
             <span>会员统计</span>
+          </el-menu-item>
+
+          <el-menu-item index="/member/pointStatistics" v-if="hasPermission('member:pointStatistics:list')">
+            <el-icon><DataAnalysis /></el-icon>
+            <span>积分统计</span>
           </el-menu-item>
         </el-sub-menu>
       </el-menu>
@@ -496,12 +511,12 @@ import { ElMessageBox, ElMessage } from 'element-plus'
 import {
   HomeFilled, Setting, User, Avatar, Menu, Lock,
   Expand, Fold, ArrowDown, SwitchButton,
-  House, OfficeBuilding, School, Tickets, Key, DataAnalysis,
+  House, OfficeBuilding, School, Tickets, Key,
   Tools, Document, Edit, Clock, DataLine,
   UserFilled, Plus, PriceTag, Warning, Checked, CopyDocument, Upload,
   Calendar, Search, EditPen, Grid, Monitor, SetUp, Share, List, Money,
   TrendCharts, Timer, Coin, Histogram, Wallet, Ticket, PieChart,
-  Stamp, Medal
+  Stamp, Medal, DataAnalysis
 } from '@element-plus/icons-vue'
 
 const route = useRoute()
@@ -612,7 +627,10 @@ const hasFinancePermission = computed(() => {
 const hasMemberPermission = computed(() => {
   return hasPermission('member:level:list') ||
          hasPermission('member:list') ||
-         hasPermission('member:statistics:list')
+         hasPermission('member:pointRule:list') ||
+         hasPermission('member:point:list') ||
+         hasPermission('member:statistics:list') ||
+         hasPermission('member:pointStatistics:list')
 })
 
 const toggleCollapse = () => {

@@ -291,6 +291,18 @@
             <span class="label">退还押金：</span>
             <span class="value" style="color: #67c23a">¥{{ depositRefund }}</span>
           </div>
+          <div class="info-row" v-if="pointEarnResult.earnedPoints > 0">
+            <span class="label">获得积分：</span>
+            <span class="value" style="color: #e6a23c; font-weight: bold">{{ pointEarnResult.earnedPoints }} 积分</span>
+          </div>
+        </div>
+        <div v-if="pointEarnResult.earnedPoints > 0" class="point-earn-detail">
+          <el-divider content-position="left">积分计算明细</el-divider>
+          <div class="info-row"><span class="label">消费金额：</span><span class="value">¥{{ pointEarnResult.consumeAmount }}</span></div>
+          <div class="info-row"><span class="label">基础积分：</span><span class="value">{{ pointEarnResult.basePoints }}</span></div>
+          <div class="info-row"><span class="label">等级倍率：</span><span class="value">{{ pointEarnResult.pointRate }}倍</span></div>
+          <div class="info-row"><span class="label">实际获得：</span><span class="value" style="color: #e6a23c; font-weight: bold">{{ pointEarnResult.earnedPoints }} 积分</span></div>
+          <div class="info-row"><span class="label">积分余额：</span><span class="value" style="color: #409eff">{{ pointEarnResult.balanceAfter }}</span></div>
         </div>
       </div>
       <template #footer>
@@ -338,6 +350,7 @@ const checkIn = ref({
 })
 
 const checkoutResult = ref({})
+const pointEarnResult = ref({})
 
 const checkoutForm = reactive({
   checkInId: null,
@@ -513,6 +526,24 @@ const handleCheckout = async () => {
     const res = await api.checkin.checkout(data)
     if (res.code === 200) {
       checkoutResult.value = res.data
+
+      if (checkIn.value.customerId) {
+        try {
+          const memberRes = await api.member.getByCustomerId(checkIn.value.customerId)
+          if (memberRes.code === 200 && memberRes.data) {
+            const earnRes = await api.member.earnPointsOnCheckout({
+              memberId: memberRes.data.id,
+              consumeAmount: totalAmount.value
+            })
+            if (earnRes.code === 200) {
+              pointEarnResult.value = earnRes.data
+            }
+          }
+        } catch (e) {
+          console.error('自动发放积分失败', e)
+        }
+      }
+
       successDialogVisible.value = true
     }
   } catch (e) {
@@ -746,6 +777,30 @@ onMounted(() => {
           font-weight: bold;
           font-size: 16px;
         }
+      }
+    }
+  }
+
+  .point-earn-detail {
+    margin-top: 12px;
+    background: #fdf6ec;
+    border-radius: 8px;
+    padding: 12px 16px;
+
+    .info-row {
+      display: flex;
+      padding: 4px 0;
+
+      .label {
+        color: #909399;
+        width: 80px;
+        font-size: 13px;
+      }
+
+      .value {
+        color: #303133;
+        font-weight: 500;
+        font-size: 13px;
       }
     }
   }

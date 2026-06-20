@@ -7,6 +7,7 @@ import com.example.permission.entity.Member;
 import com.example.permission.entity.MemberLevel;
 import com.example.permission.entity.MemberLevelLog;
 import com.example.permission.entity.MemberPointLog;
+import com.example.permission.entity.PointConsumeRule;
 import com.example.permission.mapper.CustomerMapper;
 import com.example.permission.mapper.MemberLevelLogMapper;
 import com.example.permission.mapper.MemberLevelMapper;
@@ -49,6 +50,9 @@ public class MemberService {
 
     @Autowired
     private CustomerMapper customerMapper;
+
+    @Autowired
+    private PointRuleService pointRuleService;
 
     public PageResult<Member> pageList(Integer pageNum, Integer pageSize, String keyword,
                                         List<Long> levelIds, List<Integer> status,
@@ -618,5 +622,202 @@ public class MemberService {
             } catch (Exception e) {
             }
         }
+    }
+
+    @Transactional
+    public Map<String, Object> earnPointsOnCheckout(Long memberId, BigDecimal consumeAmount,
+                                                     Long operatorId, String operatorName) {
+        Member member = memberMapper.selectOneById(memberId);
+        if (member == null || member.getDeleted() == 1) {
+            throw new BusinessException("会员不存在");
+        }
+        if (member.getStatus() == 0) {
+            throw new BusinessException("会员已冻结，无法发放积分");
+        }
+
+        MemberLevel level = memberLevelMapper.selectOneById(member.getLevelId());
+        BigDecimal pointRate = level != null && level.getPointRate() != null ? level.getPointRate() : BigDecimal.ONE;
+
+        BigDecimal earnedPoints = pointRuleService.calculateEarnPoints(consumeAmount, pointRate, 1);
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("consumeAmount", consumeAmount);
+        result.put("basePoints", consumeAmount);
+        result.put("pointRate", pointRate);
+        result.put("earnedPoints", earnedPoints);
+
+        if (earnedPoints.compareTo(BigDecimal.ZERO) > 0) {
+            BigDecimal balanceBefore = member.getCurrentPoints();
+            BigDecimal balanceAfter = balanceBefore.add(earnedPoints);
+
+            member.setCurrentPoints(balanceAfter);
+            member.setTotalPoints(member.getTotalPoints().add(earnedPoints));
+            member.setUpdateTime(LocalDateTime.now());
+            memberMapper.update(member);
+
+            MemberPointLog log = new MemberPointLog();
+            log.setMemberId(memberId);
+            log.setMemberNo(member.getMemberNo());
+            log.setPointType(1);
+            log.setPoints(earnedPoints);
+            log.setBalanceBefore(balanceBefore);
+            log.setBalanceAfter(balanceAfter);
+            log.setReasonType(1);
+            log.setReason("消费赠送");
+            log.setDetail("消费金额" + consumeAmount + "元，基础积分" + consumeAmount.intValue() + "，等级倍率" + pointRate + "，实际获得" + earnedPoints + "积分");
+            log.setOperatorId(operatorId);
+            log.setOperatorName(operatorName);
+            log.setCreateTime(LocalDateTime.now());
+            memberPointLogMapper.insert(log);
+
+            checkAndUpgradeLevel(member, operatorId, operatorName);
+
+            result.put("balanceAfter", balanceAfter);
+        } else {
+            result.put("balanceAfter", member.getCurrentPoints());
+        }
+
+        return result;
+    }
+
+    @Transactional
+    public Map<String, Object> usePointsWithRule(Long memberId, BigDecimal points, BigDecimal orderAmount,
+                                                  Long operatorId, String operatorName) {
+        if (points == null || points.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new BusinessException("积分数量必须大于0");
+        }
+
+        Member member = memberMapper.selectOneById(memberId);
+        if (member == null || member.getDeleted() == 1) {
+            throw new BusinessException("会员不存在");
+        }
+        if (member.getStatus() == 0) {
+            throw new BusinessException("会员已冻结，无法使用积分");
+        }
+        if (member.getCurrentPoints().compareTo(points) < 0) {
+            throw new BusinessException("积分不足，当前可用积分：" + member.getCurrentPoints());
+        }
+
+        PointConsumeRule rule = pointRuleService.getEnabledConsumeRuleByType(1);
+        if (rule == null) {
+            throw new BusinessException("未配置积分抵现规则或规则未启用");
+        }
+
+        if (rule.getMaxPointsPerUse() != null && rule.getMaxPointsPerUse().compareTo(BigDecimal.ZERO) > 0) {
+            if (points.compareTo(rule.getMaxPointsPerUse()) > 0) {
+                throw new BusinessException("单次最多使用" + rule.getMaxPointsPerUse() + "积分");
+            }
+        }
+
+        if (rule.getMinOrderAmount() != null && rule.getMinOrderAmount().compareTo(BigDecimal.ZERO) > 0) {
+            if (orderAmount == null || orderAmount.compareTo(rule.getMinOrderAmount()) < 0) {
+                throw new BusinessException("订单金额需满" + rule.getMinOrderAmount() + "元才能使用积分");
+            }
+        }
+
+        BigDecimal deductionAmount = BigDecimal.ZERO;
+        if (rule.getExchangePoints() != null && rule.getExchangePoints().compareTo(BigDecimal.ZERO) > 0
+                && rule.getExchangeAmount() != null && rule.getExchangeAmount().compareTo(BigDecimal.ZERO) > 0) {
+            deductionAmount = points.multiply(rule.getExchangeAmount()).divide(rule.getExchangePoints(), 2, BigDecimal.ROUND_DOWN);
+        }
+
+        if (rule.getDeductionCap() != null && rule.getDeductionCap().compareTo(BigDecimal.ZERO) > 0
+                && orderAmount != null && orderAmount.compareTo(BigDecimal.ZERO) > 0) {
+            BigDecimal maxDeduction = orderAmount.multiply(rule.getDeductionCap()).divide(new BigDecimal("100"), 2, BigDecimal.ROUND_DOWN);
+            if (deductionAmount.compareTo(maxDeduction) > 0) {
+                deductionAmount = maxDeduction;
+            }
+        }
+
+        BigDecimal balanceBefore = member.getCurrentPoints();
+        BigDecimal balanceAfter = balanceBefore.subtract(points);
+
+        member.setCurrentPoints(balanceAfter);
+        member.setUpdateTime(LocalDateTime.now());
+        memberMapper.update(member);
+
+        MemberPointLog log = new MemberPointLog();
+        log.setMemberId(memberId);
+        log.setMemberNo(member.getMemberNo());
+        log.setPointType(2);
+        log.setPoints(points);
+        log.setBalanceBefore(balanceBefore);
+        log.setBalanceAfter(balanceAfter);
+        log.setReasonType(6);
+        log.setReason("积分抵现");
+        log.setDetail("使用" + points + "积分抵扣" + deductionAmount + "元");
+        log.setOperatorId(operatorId);
+        log.setOperatorName(operatorName);
+        log.setCreateTime(LocalDateTime.now());
+        memberPointLogMapper.insert(log);
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("pointsUsed", points);
+        result.put("deductionAmount", deductionAmount);
+        result.put("balanceAfter", balanceAfter);
+        result.put("payableAmount", orderAmount != null ? orderAmount.subtract(deductionAmount) : deductionAmount.negate());
+
+        return result;
+    }
+
+    public PageResult<MemberPointLog> getPointLogPageFiltered(Integer pageNum, Integer pageSize, Long memberId,
+                                                               Integer pointType, String startTime, String endTime) {
+        QueryWrapper query = QueryWrapper.create()
+                .from(MemberPointLog.class)
+                .where(MEMBER_POINT_LOG.MEMBER_ID.eq(memberId));
+
+        if (pointType != null) {
+            query.and(MEMBER_POINT_LOG.POINT_TYPE.eq(pointType));
+        }
+        if (startTime != null && !startTime.isEmpty()) {
+            query.and(MEMBER_POINT_LOG.CREATE_TIME.ge(LocalDateTime.parse(startTime + " 00:00:00",
+                    DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))));
+        }
+        if (endTime != null && !endTime.isEmpty()) {
+            query.and(MEMBER_POINT_LOG.CREATE_TIME.le(LocalDateTime.parse(endTime + " 23:59:59",
+                    DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))));
+        }
+
+        query.orderBy(MEMBER_POINT_LOG.CREATE_TIME.desc());
+        Page<MemberPointLog> page = memberPointLogMapper.paginate(pageNum, pageSize, query);
+        return new PageResult<>(page.getTotalRow(), page.getRecords(), (long) pageNum, (long) pageSize);
+    }
+
+    public Map<String, Object> getMemberPointSummary(Long memberId) {
+        Member member = memberMapper.selectOneById(memberId);
+        if (member == null || member.getDeleted() == 1) {
+            throw new BusinessException("会员不存在");
+        }
+
+        Map<String, Object> summary = new HashMap<>();
+        summary.put("currentPoints", member.getCurrentPoints());
+
+        BigDecimal totalEarned = BigDecimal.ZERO;
+        QueryWrapper earnQuery = QueryWrapper.create()
+                .from(MemberPointLog.class)
+                .where(MEMBER_POINT_LOG.MEMBER_ID.eq(memberId))
+                .and(MEMBER_POINT_LOG.POINT_TYPE.eq(1));
+        List<MemberPointLog> earnLogs = memberPointLogMapper.selectListByQuery(earnQuery);
+        for (MemberPointLog log : earnLogs) {
+            if (log.getPoints() != null) {
+                totalEarned = totalEarned.add(log.getPoints());
+            }
+        }
+        summary.put("totalEarned", totalEarned);
+
+        BigDecimal totalUsed = BigDecimal.ZERO;
+        QueryWrapper useQuery = QueryWrapper.create()
+                .from(MemberPointLog.class)
+                .where(MEMBER_POINT_LOG.MEMBER_ID.eq(memberId))
+                .and(MEMBER_POINT_LOG.POINT_TYPE.eq(2));
+        List<MemberPointLog> useLogs = memberPointLogMapper.selectListByQuery(useQuery);
+        for (MemberPointLog log : useLogs) {
+            if (log.getPoints() != null) {
+                totalUsed = totalUsed.add(log.getPoints());
+            }
+        }
+        summary.put("totalUsed", totalUsed);
+
+        return summary;
     }
 }

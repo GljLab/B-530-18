@@ -54,6 +54,13 @@
           <el-icon><Coin /></el-icon>发放积分
         </el-button>
         <el-button
+          v-if="hasPermission('member:point:use') && memberInfo.status === 1 && memberInfo.currentPoints > 0"
+          type="primary"
+          @click="handleUsePoints"
+        >
+          <el-icon><Coin /></el-icon>积分抵扣
+        </el-button>
+        <el-button
           v-if="hasPermission('member:level:adjust')"
           type="warning"
           @click="handleAdjustLevel"
@@ -344,6 +351,48 @@
     </el-tabs>
 
     <el-dialog
+      v-model="usePointsDialogVisible"
+      title="积分抵扣"
+      width="520px"
+      destroy-on-close
+    >
+      <el-form ref="usePointsFormRef" :model="usePointsForm" :rules="usePointsRules" label-width="110px">
+        <el-form-item label="会员姓名">
+          <span>{{ memberInfo.customerName }}</span>
+        </el-form-item>
+        <el-form-item label="当前可用积分">
+          <span style="color: #e6a23c; font-weight: 600; font-size: 16px">{{ formatNumber(memberInfo.currentPoints) }}</span>
+        </el-form-item>
+        <el-form-item label="订单金额" prop="orderAmount">
+          <el-input-number v-model="usePointsForm.orderAmount" :min="0" :precision="2" style="width: 100%" placeholder="请输入订单金额" />
+        </el-form-item>
+        <el-form-item label="使用积分" prop="points">
+          <el-slider
+            v-model="usePointsForm.points"
+            :max="memberInfo.currentPoints || 0"
+            :step="1"
+            show-input
+            :show-input-controls="false"
+            style="width: 100%"
+          />
+        </el-form-item>
+        <el-form-item label="可抵扣金额">
+          <span style="color: #67c23a; font-weight: 600; font-size: 16px">¥{{ usePointsDeduction }}</span>
+        </el-form-item>
+        <el-form-item label="抵扣后应付">
+          <span style="font-weight: 600; font-size: 16px" :style="{ color: usePointsForm.orderAmount - usePointsDeduction > 0 ? '#f56c6c' : '#67c23a' }">
+            ¥{{ Math.max(0, usePointsForm.orderAmount - usePointsDeduction).toFixed(2) }}
+          </span>
+        </el-form-item>
+        <el-alert v-if="usePointsErrorMsg" :title="usePointsErrorMsg" type="error" show-icon :closable="false" style="margin-bottom: 12px" />
+      </el-form>
+      <template #footer>
+        <el-button @click="usePointsDialogVisible = false">取消</el-button>
+        <el-button type="primary" :loading="usePointsDialogSaving" :disabled="!!usePointsErrorMsg" @click="handleUsePointsSubmit">确认抵扣</el-button>
+      </template>
+    </el-dialog>
+
+    <el-dialog
       v-model="pointsDialogVisible"
       title="发放积分"
       width="480px"
@@ -458,6 +507,47 @@ const pointLogsPage = reactive({
 })
 
 const levelLogs = ref([])
+
+const usePointsDialogVisible = ref(false)
+const usePointsDialogSaving = ref(false)
+const usePointsFormRef = ref(null)
+const usePointsForm = reactive({
+  orderAmount: 0,
+  points: 0
+})
+const usePointsRules = {
+  orderAmount: [{ required: true, message: '请输入订单金额', trigger: 'blur' }],
+  points: [{ required: true, message: '请输入使用积分', trigger: 'blur' }]
+}
+const usePointsConsumeRule = ref(null)
+
+const usePointsDeduction = computed(() => {
+  if (!usePointsConsumeRule.value || usePointsForm.points <= 0) return 0
+  const rule = usePointsConsumeRule.value
+  const ratio = Number(rule.exchangeAmount) / Number(rule.exchangePoints)
+  let deduction = usePointsForm.points * ratio
+  if (rule.deductionCap && rule.deductionCap > 0 && usePointsForm.orderAmount > 0) {
+    const maxDeduction = usePointsForm.orderAmount * Number(rule.deductionCap) / 100
+    deduction = Math.min(deduction, maxDeduction)
+  }
+  return deduction.toFixed(2)
+})
+
+const usePointsErrorMsg = computed(() => {
+  if (!usePointsConsumeRule.value) return '暂无可用的积分抵现规则'
+  const rule = usePointsConsumeRule.value
+  if (usePointsForm.points <= 0) return ''
+  if (rule.maxPointsPerUse && usePointsForm.points > rule.maxPointsPerUse) {
+    return `单次最多使用 ${rule.maxPointsPerUse} 积分`
+  }
+  if (rule.minOrderAmount && usePointsForm.orderAmount < Number(rule.minOrderAmount)) {
+    return `订单金额需满 ${rule.minOrderAmount} 元才能使用积分`
+  }
+  if (usePointsForm.points > (memberInfo.value.currentPoints || 0)) {
+    return '积分不足'
+  }
+  return ''
+})
 
 const pointsDialogVisible = ref(false)
 const pointsDialogSaving = ref(false)
@@ -574,6 +664,56 @@ const handleAddPoints = () => {
   pointsForm.reasonType = 2
   pointsForm.detail = ''
   pointsDialogVisible.value = true
+}
+
+const handleUsePoints = async () => {
+  usePointsForm.orderAmount = 0
+  usePointsForm.points = 0
+  try {
+    const res = await api.pointRule.consumeEnabled()
+    if (res.code === 200 && res.data) {
+      const cashRule = res.data.find(r => r.ruleType === 1)
+      if (cashRule) {
+        usePointsConsumeRule.value = cashRule
+      }
+    }
+  } catch (e) {
+    console.error(e)
+  }
+  usePointsDialogVisible.value = true
+}
+
+const handleUsePointsSubmit = async () => {
+  if (!usePointsFormRef.value) return
+  try {
+    await usePointsFormRef.value.validate()
+  } catch {
+    return
+  }
+
+  if (usePointsErrorMsg.value) {
+    ElMessage.warning(usePointsErrorMsg.value)
+    return
+  }
+
+  usePointsDialogSaving.value = true
+  try {
+    const res = await api.member.usePointsWithRule({
+      memberId: memberId.value,
+      points: usePointsForm.points,
+      orderAmount: usePointsForm.orderAmount
+    })
+    if (res.code === 200) {
+      ElMessage.success(`积分抵扣成功，抵扣金额：¥${usePointsDeduction.value}`)
+      usePointsDialogVisible.value = false
+      loadMemberInfo()
+      loadPointLogs()
+    }
+  } catch (e) {
+    console.error(e)
+  } finally {
+    usePointsDialogSaving.value = false
+  }
 }
 
 const handlePointsSubmit = async () => {

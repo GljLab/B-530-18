@@ -489,6 +489,24 @@ const routes = [
         name: 'MemberStatistics',
         component: () => import('@/views/member/MemberStatistics.vue'),
         meta: { title: '会员统计', icon: 'DataLine', permission: 'member:statistics:list' }
+      },
+      {
+        path: 'member/pointRule',
+        name: 'PointRuleManage',
+        component: () => import('@/views/member/PointRuleManage.vue'),
+        meta: { title: '积分规则管理', icon: 'SetUp', permission: 'member:pointRule:list' }
+      },
+      {
+        path: 'member/points',
+        name: 'MemberPoints',
+        component: () => import('@/views/member/MemberPoints.vue'),
+        meta: { title: '积分明细', icon: 'Coin', permission: 'member:point:list' }
+      },
+      {
+        path: 'member/pointStatistics',
+        name: 'PointStatistics',
+        component: () => import('@/views/member/PointStatistics.vue'),
+        meta: { title: '积分统计', icon: 'DataAnalysis', permission: 'member:pointStatistics:list' }
       }
     ]
   },

@@ -220,4 +220,49 @@ public class MemberController {
                 loginUser.getUserId(), loginUser.getUser().getNickname());
         return Result.success();
     }
+
+    @PostMapping("/points/earnOnCheckout")
+    @PreAuthorize("hasAuthority('member:point:add')")
+    public Result<Map<String, Object>> earnPointsOnCheckout(@RequestBody Map<String, Object> params) {
+        LoginUser loginUser = (LoginUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Long memberId = Long.valueOf(params.get("memberId").toString());
+        BigDecimal consumeAmount = new BigDecimal(params.get("consumeAmount").toString());
+
+        Map<String, Object> result = memberService.earnPointsOnCheckout(memberId, consumeAmount,
+                loginUser.getUserId(), loginUser.getUser().getNickname());
+        return Result.success(result);
+    }
+
+    @PostMapping("/points/useWithRule")
+    @PreAuthorize("hasAuthority('member:point:use')")
+    public Result<Map<String, Object>> usePointsWithRule(@RequestBody Map<String, Object> params) {
+        LoginUser loginUser = (LoginUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Long memberId = Long.valueOf(params.get("memberId").toString());
+        BigDecimal points = new BigDecimal(params.get("points").toString());
+        BigDecimal orderAmount = params.get("orderAmount") != null ? new BigDecimal(params.get("orderAmount").toString()) : null;
+
+        Map<String, Object> result = memberService.usePointsWithRule(memberId, points, orderAmount,
+                loginUser.getUserId(), loginUser.getUser().getNickname());
+        return Result.success(result);
+    }
+
+    @GetMapping("/{id}/pointSummary")
+    @PreAuthorize("hasAuthority('member:query')")
+    public Result<Map<String, Object>> getPointSummary(@PathVariable Long id) {
+        Map<String, Object> summary = memberService.getMemberPointSummary(id);
+        return Result.success(summary);
+    }
+
+    @GetMapping("/{id}/pointLogs/filtered")
+    @PreAuthorize("hasAuthority('member:query')")
+    public Result<PageResult<MemberPointLog>> getPointLogPageFiltered(
+            @PathVariable Long id,
+            @RequestParam(defaultValue = "1") Integer pageNum,
+            @RequestParam(defaultValue = "10") Integer pageSize,
+            @RequestParam(required = false) Integer pointType,
+            @RequestParam(required = false) String startTime,
+            @RequestParam(required = false) String endTime) {
+        PageResult<MemberPointLog> result = memberService.getPointLogPageFiltered(pageNum, pageSize, id, pointType, startTime, endTime);
+        return Result.success(result);
+    }
 }
