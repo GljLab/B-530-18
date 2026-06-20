@@ -291,16 +291,16 @@
             <span class="label">退还押金：</span>
             <span class="value" style="color: #67c23a">¥{{ depositRefund }}</span>
           </div>
-          <div class="info-row" v-if="checkoutResult.memberId && checkoutResult.earnedPoints > 0">
+          <div class="info-row" v-if="checkoutResult.memberId">
             <span class="label">本次获得积分：</span>
-            <span class="value" style="color: #e6a23c; font-weight: bold">{{ checkoutResult.earnedPoints }}积分</span>
+            <span class="value" style="color: #e6a23c; font-weight: bold">{{ checkoutResult.earnedPoints || 0 }}积分</span>
           </div>
         </div>
         <div v-if="checkoutResult.memberId && checkoutResult.pointInfo" class="point-earn-detail">
           <el-divider content-position="left">积分计算明细</el-divider>
           <div class="info-row"><span class="label">消费金额：</span><span class="value">¥{{ checkoutResult.pointInfo.consumeAmount }}元</span></div>
           <div class="info-row"><span class="label">基础积分：</span><span class="value">{{ checkoutResult.pointInfo.basePoints }}积分</span></div>
-          <div class="info-row"><span class="label">等级倍率：</span><span class="value">{{ checkoutResult.pointInfo.pointRate }}倍（{{ checkoutResult.memberLevelName }}）</span></div>
+          <div class="info-row"><span class="label">等级倍率：</span><span class="value">{{ checkoutResult.pointInfo.pointRate }}倍（{{ checkoutResult.pointInfo.levelName }}）</span></div>
           <div class="info-row"><span class="label">实际获得：</span><span class="value" style="color: #e6a23c; font-weight: bold">{{ checkoutResult.pointInfo.earnedPoints }}积分</span></div>
           <div class="info-row"><span class="label">积分余额：</span><span class="value" style="color: #409eff">{{ checkoutResult.pointInfo.balanceAfter }}积分</span></div>
         </div>

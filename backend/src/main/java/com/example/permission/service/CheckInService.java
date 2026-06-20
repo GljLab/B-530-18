@@ -1049,14 +1049,12 @@ public class CheckInService {
 
         Map<String, Object> pointResult = null;
         if (checkIn.getMemberId() != null) {
-            try {
-                pointResult = memberService.earnPointsOnCheckout(checkIn.getMemberId(), totalAmount,
-                        user.getUserId(), user.getUsername());
-                BigDecimal earnedPoints = pointResult != null ? (BigDecimal) pointResult.get("earnedPoints") : BigDecimal.ZERO;
-                checkIn.setEarnedPoints(earnedPoints);
-                checkInMapper.update(checkIn);
-            } catch (Exception e) {
-            }
+            pointResult = memberService.earnPointsOnCheckout(checkIn.getMemberId(), totalAmount,
+                    user.getUserId(), user.getUsername(), 2, checkInId);
+            BigDecimal earnedPoints = pointResult != null && pointResult.get("earnedPoints") != null
+                    ? (BigDecimal) pointResult.get("earnedPoints") : BigDecimal.ZERO;
+            checkIn.setEarnedPoints(earnedPoints);
+            checkInMapper.update(checkIn);
         }
 
         record.setPointInfo(pointResult);

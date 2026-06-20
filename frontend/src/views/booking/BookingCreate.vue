@@ -291,7 +291,7 @@
                   </div>
                   <div class="pref-item">
                     <span class="pref-key">可用积分：</span>
-                    <span class="pref-value" style="color: #e6a23c; font-weight: 600">{{ customerMemberInfo.availablePoints ?? 0 }}</span>
+                    <span class="pref-value" style="color: #e6a23c; font-weight: 600">{{ customerMemberInfo.currentPoints ?? 0 }}</span>
                   </div>
                 </div>
                 <el-divider v-if="customerMemberInfo" />
@@ -447,7 +447,7 @@
               <el-row :gutter="24">
                 <el-col :span="24">
                   <div style="color: #909399; font-size: 13px; line-height: 1.8; padding-left: 110px">
-                    <div>可用积分：<span style="color: #e6a23c; font-weight: 600">{{ customerMemberInfo.availablePoints ?? 0 }}</span> 积分（100积分=10元）</div>
+                    <div>可用积分：<span style="color: #e6a23c; font-weight: 600">{{ customerMemberInfo.currentPoints ?? 0 }}</span> 积分（100积分=10元）</div>
                     <div>单次最多使用5000积分，最低消费100元，最多抵扣订单金额30%</div>
                   </div>
                 </el-col>
@@ -816,7 +816,7 @@ const pointsDeductionAmount = computed(() => {
 
 const maxPointsUsable = computed(() => {
   if (!customerMemberInfo.value) return 0
-  const availablePoints = customerMemberInfo.value.availablePoints ?? 0
+  const availablePoints = customerMemberInfo.value.currentPoints ?? 0
   const baseAmount = roomTotal.value + extraBedTotal.value + step3Form.otherFee - step3Form.discount
   const maxDeduction = baseAmount * 0.30
   const maxPointsFromCap = Math.floor(maxDeduction / 0.1)

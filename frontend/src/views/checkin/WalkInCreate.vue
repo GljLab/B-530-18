@@ -177,7 +177,7 @@
                     <div class="member-info-row">
                       <span>卡号：{{ memberInfo.memberNo }}</span>
                       <span>等级：{{ memberInfo.levelName }}</span>
-                      <span>可用积分：{{ memberInfo.availablePoints }}</span>
+                      <span>可用积分：{{ memberInfo.currentPoints }}</span>
                       <el-button type="danger" text size="small" @click="handleCancelMember">取消关联</el-button>
                     </div>
                   </template>
@@ -462,7 +462,7 @@
                 </div>
                 <div v-if="memberInfo" class="confirm-item">
                   <span class="confirm-label">关联会员：</span>
-                  <span class="confirm-value">{{ memberInfo.memberNo }}（{{ memberInfo.levelName }}，积分：{{ memberInfo.availablePoints }}）</span>
+                  <span class="confirm-value">{{ memberInfo.memberNo }}（{{ memberInfo.levelName }}，积分：{{ memberInfo.currentPoints }}）</span>
                 </div>
               </el-card>
             </el-col>

@@ -229,7 +229,7 @@ public class MemberController {
         BigDecimal consumeAmount = new BigDecimal(params.get("consumeAmount").toString());
 
         Map<String, Object> result = memberService.earnPointsOnCheckout(memberId, consumeAmount,
-                loginUser.getUserId(), loginUser.getUser().getNickname());
+                loginUser.getUserId(), loginUser.getUser().getNickname(), null, null);
         return Result.success(result);
     }
 
@@ -242,7 +242,7 @@ public class MemberController {
         BigDecimal orderAmount = params.get("orderAmount") != null ? new BigDecimal(params.get("orderAmount").toString()) : null;
 
         Map<String, Object> result = memberService.usePointsWithRule(memberId, points, orderAmount,
-                loginUser.getUserId(), loginUser.getUser().getNickname());
+                loginUser.getUserId(), loginUser.getUser().getNickname(), null, null);
         return Result.success(result);
     }
 

@@ -365,19 +365,6 @@ public class BookingService {
                 .subtract(booking.getDiscount() != null ? booking.getDiscount() : BigDecimal.ZERO)
                 .add(booking.getOtherFee() != null ? booking.getOtherFee() : BigDecimal.ZERO);
 
-        if (booking.getPointsUsed() != null && booking.getPointsUsed().compareTo(BigDecimal.ZERO) > 0) {
-            if (booking.getMemberId() == null) {
-                throw new BusinessException("使用积分需关联会员");
-            }
-            Map<String, Object> pointsResult = memberService.usePointsWithRule(
-                    booking.getMemberId(), booking.getPointsUsed(), totalAmount,
-                    loginUser.getUserId(), loginUser.getUser().getNickname() != null ?
-                            loginUser.getUser().getNickname() : loginUser.getUsername());
-            BigDecimal deductionAmount = (BigDecimal) pointsResult.get("deductionAmount");
-            booking.setPointsDeductionAmount(deductionAmount);
-            totalAmount = totalAmount.subtract(deductionAmount);
-        }
-
         String bookingNo = generateBookingNo();
 
         booking.setBookingNo(bookingNo);
@@ -400,6 +387,23 @@ public class BookingService {
         booking.setUpdateTime(LocalDateTime.now());
 
         bookingMapper.insert(booking);
+
+        if (booking.getPointsUsed() != null && booking.getPointsUsed().compareTo(BigDecimal.ZERO) > 0) {
+            if (booking.getMemberId() == null) {
+                throw new BusinessException("使用积分需关联会员");
+            }
+            Map<String, Object> pointsResult = memberService.usePointsWithRule(
+                    booking.getMemberId(), booking.getPointsUsed(), totalAmount,
+                    loginUser.getUserId(), loginUser.getUser().getNickname() != null ?
+                            loginUser.getUser().getNickname() : loginUser.getUsername(),
+                    1, booking.getId());
+            BigDecimal deductionAmount = (BigDecimal) pointsResult.get("deductionAmount");
+            booking.setPointsDeductionAmount(deductionAmount);
+            BigDecimal finalAmount = totalAmount.subtract(deductionAmount);
+            booking.setTotalAmount(finalAmount.setScale(2, RoundingMode.HALF_UP));
+            booking.setUpdateTime(LocalDateTime.now());
+            bookingMapper.update(booking);
+        }
 
         // 统一自动生成预订明细，不依赖前端传入
         generateBookingDetails(booking, roomType);

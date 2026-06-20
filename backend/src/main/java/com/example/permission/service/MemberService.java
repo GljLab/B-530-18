@@ -696,7 +696,8 @@ public class MemberService {
 
     @Transactional
     public Map<String, Object> earnPointsOnCheckout(Long memberId, BigDecimal consumeAmount,
-                                                     Long operatorId, String operatorName) {
+                                                     Long operatorId, String operatorName,
+                                                     Integer relatedOrderType, Long relatedOrderId) {
         Member member = memberMapper.selectOneById(memberId);
         if (member == null || member.getDeleted() == 1) {
             throw new BusinessException("会员不存在");
@@ -714,6 +715,7 @@ public class MemberService {
         result.put("consumeAmount", consumeAmount);
         result.put("basePoints", consumeAmount);
         result.put("pointRate", pointRate);
+        result.put("levelName", level != null ? level.getLevelName() : "普通会员");
         result.put("earnedPoints", earnedPoints);
 
         if (earnedPoints.compareTo(BigDecimal.ZERO) > 0) {
@@ -735,6 +737,8 @@ public class MemberService {
             log.setReasonType(1);
             log.setReason("消费赠送");
             log.setDetail("消费金额" + consumeAmount + "元，基础积分" + consumeAmount.intValue() + "，等级倍率" + pointRate + "，实际获得" + earnedPoints + "积分");
+            log.setRelatedOrderType(relatedOrderType);
+            log.setRelatedOrderId(relatedOrderId);
             log.setOperatorId(operatorId);
             log.setOperatorName(operatorName);
             log.setCreateTime(LocalDateTime.now());
@@ -752,7 +756,8 @@ public class MemberService {
 
     @Transactional
     public Map<String, Object> usePointsWithRule(Long memberId, BigDecimal points, BigDecimal orderAmount,
-                                                  Long operatorId, String operatorName) {
+                                                  Long operatorId, String operatorName,
+                                                  Integer relatedOrderType, Long relatedOrderId) {
         if (points == null || points.compareTo(BigDecimal.ZERO) <= 0) {
             throw new BusinessException("积分数量必须大于0");
         }
@@ -816,6 +821,8 @@ public class MemberService {
         log.setReasonType(6);
         log.setReason("积分抵现");
         log.setDetail("使用" + points + "积分抵扣" + deductionAmount + "元");
+        log.setRelatedOrderType(relatedOrderType);
+        log.setRelatedOrderId(relatedOrderId);
         log.setOperatorId(operatorId);
         log.setOperatorName(operatorName);
         log.setCreateTime(LocalDateTime.now());
