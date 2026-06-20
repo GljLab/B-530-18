@@ -62,6 +62,12 @@ public class Booking {
 
     private BigDecimal discount;
 
+    private BigDecimal memberDiscount;
+
+    private BigDecimal memberDiscountRate;
+
+    private String memberDiscountRemark;
+
     private BigDecimal otherFee;
 
     private BigDecimal totalAmount;

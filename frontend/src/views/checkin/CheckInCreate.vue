@@ -196,9 +196,61 @@
 
         <div v-if="activeStep === 2" class="step-2">
           <h3>分配房间</h3>
+
+          <el-alert
+            v-if="upgradeEligibility?.eligible && upgradeEligibility?.roomTypes?.length > 0"
+            title="会员升级权益"
+            type="success"
+            :closable="false"
+            show-icon
+            style="margin-bottom: 16px"
+          >
+            <template #default>
+              <div class="upgrade-alert-content">
+                <span>该会员可免费升级房型，当前可升级房型：</span>
+                <el-select
+                  v-model="selectedUpgradeRoomTypeId"
+                  placeholder="选择升级房型"
+                  style="width: 200px; margin: 0 12px"
+                  @change="handleUpgradeRoomTypeChange"
+                >
+                  <el-option
+                    v-for="rt in upgradeEligibility.roomTypes"
+                    :key="rt.id"
+                    :label="`${rt.typeName}（差价：+¥${rt.priceDiff.toFixed(2)}）`"
+                    :value="rt.id"
+                  />
+                </el-select>
+                <el-button
+                  type="success"
+                  size="small"
+                  :disabled="!selectedUpgradeRoomTypeId"
+                  @click="showUpgradeConfirm"
+                >
+                  确认升级
+                </el-button>
+                <el-button
+                  type="info"
+                  size="small"
+                  text
+                  @click="skipUpgrade"
+                >
+                  暂不升级
+                </el-button>
+              </div>
+            </template>
+          </el-alert>
+
+          <div v-if="isUpgraded" class="upgrade-info-bar">
+            <el-icon color="#67c23a"><CircleCheckFilled /></el-icon>
+            <span>已升级至：<strong>{{ upgradedRoomTypeName }}</strong>（原房型：{{ selectedBooking.roomTypeName }}，房费保持不变）</span>
+            <el-button type="danger" text size="small" @click="cancelUpgrade">取消升级</el-button>
+          </div>
+
           <div class="room-select-section">
             <div class="room-filter">
-              <span>房型：{{ selectedBooking.roomTypeName }}</span>
+              <span>房型：{{ isUpgraded ? upgradedRoomTypeName : selectedBooking.roomTypeName }}</span>
+              <span v-if="isUpgraded" style="color: #67c23a; font-size: 12px">（升级房型）</span>
               <el-button type="primary" @click="loadAvailableRooms">
                 <el-icon><Refresh /></el-icon>
                 刷新可用房间
@@ -210,10 +262,22 @@
                 v-for="room in availableRooms"
                 :key="room.id"
                 class="room-card"
-                :class="{ active: selectedRoomId === room.id }"
+                :class="{ active: selectedRoomId === room.id, preferred: room.isPreferred }"
                 @click="selectRoom(room.id)"
               >
-                <div class="room-number">{{ room.roomNumber }}</div>
+                <div class="room-header">
+                  <div class="room-number">{{ room.roomNumber }}</div>
+                  <el-tag
+                    v-if="room.isPreferred"
+                    size="small"
+                    type="warning"
+                    effect="light"
+                    class="preferred-tag"
+                  >
+                    <el-icon><Star /></el-icon>
+                    会员优选
+                  </el-tag>
+                </div>
                 <div class="room-info">
                   <div class="room-item">
                     <span class="label">朝向：</span>
@@ -247,7 +311,34 @@
 
         <div v-if="activeStep === 3" class="step-3">
           <h3>收取押金</h3>
-          <el-form :model="depositForm" label-width="120px" style="max-width: 600px">
+
+          <el-card v-if="depositReductionInfo?.hasReduction" class="deposit-reduction-card" shadow="hover">
+            <template #header>
+              <div class="deposit-reduction-header">
+                <el-icon color="#67c23a"><Wallet /></el-icon>
+                <span>会员押金减免</span>
+              </div>
+            </template>
+            <div class="deposit-reduction-content">
+              <div class="deposit-item">
+                <span class="deposit-label">标准押金：</span>
+                <span class="deposit-original">¥{{ depositReductionInfo.standardDeposit.toFixed(2) }}</span>
+              </div>
+              <div class="deposit-item">
+                <span class="deposit-label">减免金额：</span>
+                <span class="deposit-reduction">-¥{{ depositReductionInfo.reductionAmount.toFixed(2) }}</span>
+                <el-tag type="success" size="small" style="margin-left: 8px">
+                  {{ depositReductionInfo.reductionRemark }}
+                </el-tag>
+              </div>
+              <div class="deposit-item total">
+                <span class="deposit-label">实际押金：</span>
+                <span class="deposit-actual">¥{{ depositReductionInfo.actualDeposit.toFixed(2) }}</span>
+              </div>
+            </div>
+          </el-card>
+
+          <el-form :model="depositForm" label-width="120px" style="max-width: 600px; margin-top: 16px">
             <el-form-item label="押金金额" required>
               <el-input-number
                 v-model="depositForm.depositAmount"
@@ -255,6 +346,8 @@
                 :precision="2"
                 :step="50"
                 style="width: 200px"
+                :disabled="depositReductionInfo?.hasReduction"
+                @change="calculateDepositReduction"
               />
               <span style="margin-left: 8px; color: #909399">元</span>
             </el-form-item>
@@ -365,6 +458,21 @@
             <el-col :span="12">
               <el-card>
                 <template #header><span class="card-title">押金信息</span></template>
+                <div class="info-item" v-if="depositReductionInfo?.hasReduction">
+                  <span class="label">标准押金：</span>
+                  <span class="value" style="text-decoration: line-through; color: #909399">
+                    ¥{{ depositReductionInfo.standardDeposit.toFixed(2) }}
+                  </span>
+                </div>
+                <div class="info-item" v-if="depositReductionInfo?.hasReduction">
+                  <span class="label">减免金额：</span>
+                  <span class="value" style="color: #67c23a">
+                    -¥{{ depositReductionInfo.reductionAmount.toFixed(2) }}
+                    <el-tag type="success" size="small" style="margin-left: 8px">
+                      {{ depositReductionInfo.reductionRemark }}
+                    </el-tag>
+                  </span>
+                </div>
                 <div class="info-item">
                   <span class="label">押金金额：</span>
                   <span class="value highlight">¥{{ depositForm.depositAmount }}</span>
@@ -376,6 +484,12 @@
                 <div class="info-item">
                   <span class="label">房卡数量：</span>
                   <span class="value">{{ depositForm.keyCardCount }}张</span>
+                </div>
+                <div class="info-item" v-if="isUpgraded">
+                  <span class="label">房型升级：</span>
+                  <span class="value" style="color: #67c23a">
+                    已升级至 {{ upgradedRoomTypeName }}
+                  </span>
                 </div>
               </el-card>
             </el-col>
@@ -413,7 +527,8 @@ import { ref, reactive, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import {
-  ArrowLeft, Search, Plus, Refresh, CircleCheckFilled
+  ArrowLeft, Search, Plus, Refresh, CircleCheckFilled,
+  Star, Wallet
 } from '@element-plus/icons-vue'
 import api from '@/api'
 
@@ -476,6 +591,98 @@ const searchBookings = async () => {
 }
 
 const bookingMemberInfo = ref(null)
+const depositReductionInfo = ref(null)
+const upgradeEligibility = ref(null)
+const selectedUpgradeRoomTypeId = ref(null)
+const isUpgraded = ref(false)
+const upgradedRoomTypeName = ref('')
+const originalRoomTypeId = ref(null)
+const upgradeSkipped = ref(false)
+
+const calculateDepositReduction = async () => {
+  if (!bookingMemberInfo.value?.id || depositForm.depositAmount <= 0) {
+    depositReductionInfo.value = null
+    return
+  }
+  try {
+    const res = await api.memberBenefit.calculateDeposit({
+      memberId: bookingMemberInfo.value.id,
+      standardDeposit: depositForm.depositAmount
+    })
+    if (res.code === 200 && res.data) {
+      depositReductionInfo.value = res.data
+      if (res.data.hasReduction) {
+        depositForm.depositAmount = res.data.actualDeposit
+      }
+    }
+  } catch (e) {
+    console.error('计算押金减免失败', e)
+  }
+}
+
+const loadUpgradeEligibility = async () => {
+  if (!bookingMemberInfo.value?.id || upgradeSkipped.value || isUpgraded.value) {
+    upgradeEligibility.value = null
+    return
+  }
+  try {
+    const res = await api.memberBenefit.getUpgradeRoomTypes({
+      memberId: bookingMemberInfo.value.id,
+      currentRoomTypeId: selectedBooking.value.roomTypeId,
+      checkInDate: selectedBooking.value.checkInDate,
+      checkOutDate: selectedBooking.value.checkOutDate
+    })
+    if (res.code === 200 && res.data) {
+      upgradeEligibility.value = res.data
+    }
+  } catch (e) {
+    console.error('加载升级房型失败', e)
+  }
+}
+
+const handleUpgradeRoomTypeChange = () => {
+}
+
+const showUpgradeConfirm = async () => {
+  if (!selectedUpgradeRoomTypeId.value || !bookingId.value) return
+  try {
+    const res = await api.memberBenefit.applyRoomUpgrade(
+      bookingId.value,
+      { newRoomTypeId: selectedUpgradeRoomTypeId.value }
+    )
+    if (res.code === 200 && res.data) {
+      isUpgraded.value = true
+      upgradedRoomTypeName.value = res.data.newRoomTypeName
+      originalRoomTypeId.value = selectedBooking.value.roomTypeId
+      const upgradedType = upgradeEligibility.value.roomTypes.find(
+        rt => rt.id === selectedUpgradeRoomTypeId.value
+      )
+      if (upgradedType) {
+        upgradedRoomTypeName.value = upgradedType.typeName
+      }
+      ElMessage.success(`已成功升级至 ${upgradedRoomTypeName.value}`)
+      upgradeEligibility.value = null
+      selectedUpgradeRoomTypeId.value = null
+      loadAvailableRooms()
+    }
+  } catch (e) {
+    console.error('升级房型失败', e)
+  }
+}
+
+const skipUpgrade = () => {
+  upgradeSkipped.value = true
+  upgradeEligibility.value = null
+}
+
+const cancelUpgrade = () => {
+  isUpgraded.value = false
+  upgradedRoomTypeName.value = ''
+  originalRoomTypeId.value = null
+  upgradeSkipped.value = false
+  loadUpgradeEligibility()
+  loadAvailableRooms()
+}
 
 const selectBooking = async (booking) => {
   selectedBooking.value = booking
@@ -490,6 +697,12 @@ const selectBooking = async (booking) => {
   if (booking.roomId) {
     selectedRoomId.value = booking.roomId
   }
+  depositReductionInfo.value = null
+  upgradeEligibility.value = null
+  isUpgraded.value = false
+  upgradedRoomTypeName.value = ''
+  upgradeSkipped.value = false
+
   if (booking.memberId) {
     try {
       const res = await api.member.getById(booking.memberId)
@@ -556,14 +769,32 @@ const loadAvailableRooms = async () => {
   if (!selectedBooking.value) return
   loadingRooms.value = true
   try {
+    const queryRoomTypeId = isUpgraded.value && originalRoomTypeId.value
+      ? selectedUpgradeRoomTypeId.value
+      : selectedBooking.value.roomTypeId
+
     const res = await api.booking.roomQuery({
-      roomTypeId: selectedBooking.value.roomTypeId,
+      roomTypeId: queryRoomTypeId,
       checkInDate: selectedBooking.value.checkInDate,
       checkOutDate: selectedBooking.value.checkOutDate
     })
     if (res.code === 200) {
-      availableRooms.value = res.data || []
-      if (selectedBooking.value.roomId) {
+      let rooms = res.data || []
+
+      if (bookingMemberInfo.value?.id && rooms.length > 0) {
+        try {
+          const prefRes = await api.memberBenefit.getPreferredRooms(rooms)
+          if (prefRes.code === 200 && prefRes.data) {
+            rooms = prefRes.data
+          }
+        } catch (e) {
+          console.error('获取会员优选房间失败', e)
+        }
+      }
+
+      availableRooms.value = rooms
+
+      if (selectedBooking.value.roomId && !isUpgraded.value) {
         const hasRoom = availableRooms.value.find(r => r.id === selectedBooking.value.roomId)
         if (!hasRoom) {
           availableRooms.value.unshift({
@@ -575,6 +806,8 @@ const loadAvailableRooms = async () => {
         if (!selectedRoomId.value) {
           selectRoom(selectedBooking.value.roomId)
         }
+      } else if (rooms.length > 0 && !selectedRoomId.value) {
+        selectRoom(rooms[0].id)
       }
     }
   } catch (e) {
@@ -616,12 +849,18 @@ const validateStep = () => {
   return true
 }
 
-const nextStep = () => {
+const nextStep = async () => {
   if (!validateStep()) return
   if (activeStep.value < 4) {
     activeStep.value++
     if (activeStep.value === 2 && availableRooms.value.length === 0) {
-      loadAvailableRooms()
+      await loadAvailableRooms()
+      if (bookingMemberInfo.value?.id) {
+        await loadUpgradeEligibility()
+      }
+    }
+    if (activeStep.value === 3 && bookingMemberInfo.value?.id) {
+      await calculateDepositReduction()
     }
   }
 }
@@ -928,6 +1167,96 @@ const loadBookingDetail = async () => {
         .value {
           font-size: 16px;
           font-weight: 500;
+        }
+      }
+    }
+  }
+
+  .upgrade-alert-content {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .upgrade-info-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px;
+    background: #f0f9eb;
+    border: 1px solid #c2e7b0;
+    border-radius: 4px;
+    margin-bottom: 16px;
+
+    span {
+      flex: 1;
+      color: #67c23a;
+    }
+  }
+
+  .room-card {
+    &.preferred {
+      border-color: #e6a23c;
+      background: linear-gradient(135deg, #fdf6ec 0%, #ffffff 100%);
+    }
+
+    .room-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .preferred-tag {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+    }
+  }
+
+  .deposit-reduction-card {
+    border-left: 4px solid #67c23a;
+
+    .deposit-reduction-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 600;
+      color: #67c23a;
+    }
+
+    .deposit-reduction-content {
+      .deposit-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 0;
+
+        &.total {
+          padding-top: 12px;
+          margin-top: 8px;
+          border-top: 1px dashed #ebeef5;
+        }
+
+        .deposit-label {
+          color: #606266;
+        }
+
+        .deposit-original {
+          text-decoration: line-through;
+          color: #909399;
+        }
+
+        .deposit-reduction {
+          color: #67c23a;
+          font-weight: 600;
+        }
+
+        .deposit-actual {
+          color: #f56c6c;
+          font-size: 18px;
+          font-weight: 700;
         }
       }
     }

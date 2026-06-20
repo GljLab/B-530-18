@@ -41,6 +41,14 @@ public class MemberLevel {
 
     private BigDecimal depositReduction;
 
+    private String lateCheckoutTime;
+
+    private Integer freeUpgrade;
+
+    private Integer freeBreakfast;
+
+    private String earlyCheckinTime;
+
     private String services;
 
     private String otherBenefits;

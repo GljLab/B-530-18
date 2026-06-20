@@ -393,6 +393,119 @@
               </el-col>
             </el-row>
 
+            <template v-if="memberBenefitInfo">
+              <el-divider content-position="left">会员权益</el-divider>
+              <el-row :gutter="24">
+                <el-col :span="12">
+                  <el-card class="benefit-card member-card" shadow="hover">
+                    <div class="member-info-header">
+                      <div class="member-avatar" :style="{ backgroundColor: memberBenefitInfo.memberLevelColor || '#409eff' }">
+                        <el-icon><User /></el-icon>
+                      </div>
+                      <div class="member-info">
+                        <div class="member-name">{{ selectedCustomer?.name }}</div>
+                        <div class="member-level">
+                          <el-tag size="small" :style="{ backgroundColor: memberBenefitInfo.memberLevelColor + '20', borderColor: memberBenefitInfo.memberLevelColor, color: memberBenefitInfo.memberLevelColor }">
+                            {{ memberBenefitInfo.memberLevelIcon || '⭐' }} {{ memberBenefitInfo.memberLevel }}
+                          </el-tag>
+                        </div>
+                        <div class="member-points">
+                          当前积分：<span style="color: #e6a23c; font-weight: 600">{{ customerMemberInfo?.currentPoints ?? 0 }}</span> 分
+                        </div>
+                      </div>
+                    </div>
+                  </el-card>
+                </el-col>
+                <el-col :span="12">
+                  <el-card class="benefit-card discount-card" shadow="hover" v-if="memberBenefitInfo.hasDiscount">
+                    <div class="discount-info">
+                      <div class="discount-title">
+                        <el-icon color="#e6a23c"><Money /></el-icon>
+                        <span>会员专享折扣</span>
+                      </div>
+                      <div class="discount-amount">
+                        <span class="original-price">¥{{ roomTotal.toFixed(2) }}</span>
+                        <span class="discount-arrow">→</span>
+                        <span class="discounted-price">¥{{ (roomTotal - memberBenefitInfo.discountAmount).toFixed(2) }}</span>
+                      </div>
+                      <div class="discount-remark">
+                        <el-tag type="success" size="small">{{ memberBenefitInfo.discountRemark }}</el-tag>
+                        <span class="save-amount">已节省 ¥{{ memberBenefitInfo.discountAmount.toFixed(2) }}</span>
+                      </div>
+                    </div>
+                  </el-card>
+                  <el-card class="benefit-card" shadow="hover" v-else>
+                    <div class="no-discount">
+                      <el-icon color="#909399"><InfoFilled /></el-icon>
+                      <span>该会员等级暂不享受房费折扣</span>
+                    </div>
+                  </el-card>
+                </el-col>
+              </el-row>
+
+              <el-divider content-position="left">专属服务</el-divider>
+              <el-row :gutter="16">
+                <el-col :span="8" v-if="memberBenefitInfo.lateCheckoutTime">
+                  <div class="service-card">
+                    <div class="service-icon">
+                      <el-icon color="#67c23a"><Clock /></el-icon>
+                    </div>
+                    <div class="service-info">
+                      <div class="service-title">延迟退房</div>
+                      <div class="service-desc">可延迟退房至 {{ memberBenefitInfo.lateCheckoutTime }}</div>
+                    </div>
+                  </div>
+                </el-col>
+                <el-col :span="8" v-if="memberBenefitInfo.freeUpgrade">
+                  <div class="service-card">
+                    <div class="service-icon">
+                      <el-icon color="#409eff"><Top /></el-icon>
+                    </div>
+                    <div class="service-info">
+                      <div class="service-title">免费升级</div>
+                      <div class="service-desc">如有空房，可免费升级房型</div>
+                    </div>
+                  </div>
+                </el-col>
+                <el-col :span="8" v-if="memberBenefitInfo.freeBreakfast">
+                  <div class="service-card">
+                    <div class="service-icon">
+                      <el-icon color="#e6a23c"><CoffeeCup /></el-icon>
+                    </div>
+                    <div class="service-info">
+                      <div class="service-title">免费早餐</div>
+                      <div class="service-desc">入住期间提供免费早餐</div>
+                    </div>
+                  </div>
+                </el-col>
+                <el-col :span="8" v-if="memberBenefitInfo.depositReduction && memberBenefitInfo.depositReduction > 0">
+                  <div class="service-card">
+                    <div class="service-icon">
+                      <el-icon color="#f56c6c"><Wallet /></el-icon>
+                    </div>
+                    <div class="service-info">
+                      <div class="service-title">押金减免</div>
+                      <div class="service-desc">押金减免 {{ memberBenefitInfo.depositReduction }}%</div>
+                    </div>
+                  </div>
+                </el-col>
+                <el-col :span="24" v-if="memberBenefitInfo.services && memberBenefitInfo.services.length > 0">
+                  <div class="other-services">
+                    <span class="other-label">其他权益：</span>
+                    <el-tag
+                      v-for="(service, idx) in memberBenefitInfo.services"
+                      :key="idx"
+                      size="small"
+                      type="info"
+                      style="margin-right: 6px; margin-bottom: 4px"
+                    >
+                      {{ service }}
+                    </el-tag>
+                  </div>
+                </el-col>
+              </el-row>
+            </template>
+
             <el-divider content-position="left">优惠折扣</el-divider>
             <el-row :gutter="24">
               <el-col :span="12">
@@ -610,6 +723,11 @@
                   <span class="confirm-label">优惠折扣：</span>
                   <span class="confirm-value discount">-¥{{ step3Form.discount.toFixed(2) }}</span>
                 </div>
+                <div v-if="memberBenefitInfo?.hasDiscount" class="confirm-item">
+                  <span class="confirm-label">会员折扣：</span>
+                  <span class="confirm-value discount">-¥{{ memberBenefitInfo.discountAmount.toFixed(2) }}</span>
+                  <el-tag size="small" type="success" style="margin-left: 8px">{{ memberBenefitInfo.discountRemark }}</el-tag>
+                </div>
                 <div v-if="pointsUsed > 0" class="confirm-item">
                   <span class="confirm-label">积分抵扣：</span>
                   <span class="confirm-value discount">-¥{{ pointsDeductionAmount.toFixed(2) }}（使用{{ pointsUsed }}积分）</span>
@@ -687,7 +805,8 @@ import { useRouter, useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import {
   Plus, Check, Search, Delete, ArrowLeft, ArrowRight,
-  House, User, Money, CircleCheck, Document
+  House, User, Money, CircleCheck, Document,
+  Clock, Top, CoffeeCup, Wallet, InfoFilled
 } from '@element-plus/icons-vue'
 import api from '@/api'
 
@@ -711,6 +830,7 @@ const customerSearchResults = ref([])
 const customerSearchTimer = ref(null)
 const customerMemberInfo = ref(null)
 const pointsUsed = ref(0)
+const memberBenefitInfo = ref(null)
 
 const roomTypeInfo = reactive({
   basePrice: 298,
@@ -807,7 +927,8 @@ const extraBedTotal = computed(() => {
 })
 
 const totalAmount = computed(() => {
-  return roomTotal.value + extraBedTotal.value + step3Form.otherFee - step3Form.discount - pointsDeductionAmount.value
+  const memberDiscount = memberBenefitInfo.value?.hasDiscount ? memberBenefitInfo.value.discountAmount : 0
+  return roomTotal.value + extraBedTotal.value + step3Form.otherFee - step3Form.discount - memberDiscount - pointsDeductionAmount.value
 })
 
 const pointsDeductionAmount = computed(() => {
@@ -922,6 +1043,9 @@ const calculatePrice = async () => {
     generateMockPriceDetails()
   } finally {
     calculatingPrice.value = false
+    if (customerMemberInfo.value?.id) {
+      await calculateMemberBenefits()
+    }
   }
 }
 
@@ -983,10 +1107,30 @@ const handleCustomerSearch = () => {
   }, 300)
 }
 
+const calculateMemberBenefits = async () => {
+  if (!customerMemberInfo.value?.id || roomTotal.value <= 0) {
+    memberBenefitInfo.value = null
+    return
+  }
+  try {
+    const res = await api.memberBenefit.calculateBooking({
+      memberId: customerMemberInfo.value.id,
+      roomTotal: roomTotal.value,
+      roomTypeId: selectedRoom.value?.roomTypeId
+    })
+    if (res.code === 200 && res.data) {
+      memberBenefitInfo.value = res.data
+    }
+  } catch {
+    memberBenefitInfo.value = null
+  }
+}
+
 const handleSelectCustomer = async (customer) => {
   selectedCustomer.value = customer
   customerMemberInfo.value = null
   pointsUsed.value = 0
+  memberBenefitInfo.value = null
   try {
     const res = await api.customer.getPreference(customer.id)
     if (res.code === 200 && res.data) {
@@ -1003,6 +1147,9 @@ const handleSelectCustomer = async (customer) => {
     const res = await api.member.getByCustomerId(customer.id)
     if (res.code === 200 && res.data) {
       customerMemberInfo.value = res.data
+      if (roomTotal.value > 0) {
+        await calculateMemberBenefits()
+      }
     }
   } catch {}
   if (!step2Form.guests[0]?.name) {
@@ -1109,6 +1256,9 @@ const handleNext = async () => {
     if (activeStep.value === 2 && priceDetails.value.length === 0) {
       await calculatePrice()
     }
+    if (activeStep.value === 2 && customerMemberInfo.value?.id && !memberBenefitInfo.value) {
+      await calculateMemberBenefits()
+    }
   }
 }
 
@@ -1145,6 +1295,9 @@ const handleSubmit = async () => {
       otherFeeRemark: step3Form.otherFeeRemark,
       discount: step3Form.discount,
       discountRemark: step3Form.discountRemark,
+      memberDiscount: memberBenefitInfo.value?.hasDiscount ? memberBenefitInfo.value.discountAmount : 0,
+      memberDiscountRate: memberBenefitInfo.value?.discountRate || null,
+      memberDiscountRemark: memberBenefitInfo.value?.discountRemark || null,
       totalAmount: totalAmount.value,
       pointsUsed: pointsUsed.value,
       pointsDeductionAmount: pointsDeductionAmount.value,
@@ -1499,5 +1652,177 @@ onMounted(() => {
 
 :deep(.el-radio) {
   margin-right: 16px;
+}
+
+.benefit-card {
+  margin-bottom: 16px;
+
+  &.member-card {
+    border-left: 4px solid #409eff;
+  }
+
+  &.discount-card {
+    border-left: 4px solid #67c23a;
+    background: linear-gradient(135deg, #f0f9ff 0%, #ffffff 100%);
+  }
+}
+
+.member-info-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.member-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 28px;
+}
+
+.member-info {
+  flex: 1;
+
+  .member-name {
+    font-size: 16px;
+    font-weight: 600;
+    color: #303133;
+    margin-bottom: 6px;
+  }
+
+  .member-level {
+    margin-bottom: 6px;
+  }
+
+  .member-points {
+    font-size: 13px;
+    color: #606266;
+  }
+}
+
+.discount-info {
+  text-align: center;
+  padding: 8px 0;
+
+  .discount-title {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #e6a23c;
+    margin-bottom: 12px;
+  }
+
+  .discount-amount {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    margin-bottom: 12px;
+
+    .original-price {
+      font-size: 18px;
+      color: #909399;
+      text-decoration: line-through;
+    }
+
+    .discount-arrow {
+      font-size: 20px;
+      color: #67c23a;
+      font-weight: 600;
+    }
+
+    .discounted-price {
+      font-size: 24px;
+      font-weight: 700;
+      color: #f56c6c;
+    }
+  }
+
+  .discount-remark {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+
+    .save-amount {
+      font-size: 13px;
+      color: #67c23a;
+      font-weight: 500;
+    }
+  }
+}
+
+.no-discount {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 24px 0;
+  color: #909399;
+  font-size: 14px;
+}
+
+.service-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background: #fafafa;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  transition: all 0.3s;
+
+  &:hover {
+    background: #f0f9ff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  .service-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .service-info {
+    flex: 1;
+
+    .service-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #303133;
+      margin-bottom: 4px;
+    }
+
+    .service-desc {
+      font-size: 12px;
+      color: #909399;
+    }
+  }
+}
+
+.other-services {
+  padding: 12px 16px;
+  background: #fafafa;
+  border-radius: 8px;
+
+  .other-label {
+    font-size: 13px;
+    color: #606266;
+    margin-right: 8px;
+  }
 }
 </style>

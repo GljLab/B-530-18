@@ -56,6 +56,10 @@ public class CheckIn {
 
     private LocalDateTime actualCheckOutTime;
 
+    private Integer isLateCheckout;
+
+    private String lateCheckoutReason;
+
     private Integer days;
 
     private Integer stayedDays;
@@ -81,6 +85,20 @@ public class CheckIn {
     private BigDecimal payableAmount;
 
     private BigDecimal depositAmount;
+
+    private BigDecimal standardDeposit;
+
+    private BigDecimal depositReductionAmount;
+
+    private BigDecimal depositReductionRate;
+
+    private Integer isUpgraded;
+
+    private Long originalRoomTypeId;
+
+    private String originalRoomTypeName;
+
+    private String upgradeReason;
 
     private Integer depositMethod;
 

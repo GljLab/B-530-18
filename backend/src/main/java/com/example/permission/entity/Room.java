@@ -31,6 +31,10 @@ public class Room {
 
     private String specialTags;
 
+    private Integer isSmoking;
+
+    private Integer isPreferred;
+
     private Integer status;
 
     private String remark;

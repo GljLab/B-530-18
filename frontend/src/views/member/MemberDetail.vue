@@ -343,6 +343,99 @@
         </el-card>
       </el-tab-pane>
 
+      <el-tab-pane label="权益使用记录" name="benefitLogs">
+        <el-card shadow="never">
+          <template #header>
+            <div style="display: flex; justify-content: space-between; align-items: center">
+              <span>权益使用记录</span>
+              <div>
+                <el-button type="primary" size="small" @click="handleExportBenefitLogs" :icon="Download" :loading="exportingBenefitLogs">
+                  导出记录
+                </el-button>
+              </div>
+            </div>
+          </template>
+          <el-form :inline="true" :model="benefitLogsForm" style="margin-bottom: 16px">
+            <el-form-item label="权益类型">
+              <el-select v-model="benefitLogsForm.benefitType" placeholder="全部" clearable style="width: 150px">
+                <el-option label="房费折扣" :value="1" />
+                <el-option label="免费升级房型" :value="2" />
+                <el-option label="押金减免" :value="3" />
+                <el-option label="延迟退房" :value="4" />
+                <el-option label="积分发放" :value="5" />
+                <el-option label="提前入住" :value="6" />
+                <el-option label="免费早餐" :value="7" />
+              </el-select>
+            </el-form-item>
+            <el-form-item label="开始时间">
+              <el-date-picker
+                v-model="benefitLogsForm.startTime"
+                type="date"
+                placeholder="选择开始日期"
+                style="width: 150px"
+                value-format="YYYY-MM-DD"
+              />
+            </el-form-item>
+            <el-form-item label="结束时间">
+              <el-date-picker
+                v-model="benefitLogsForm.endTime"
+                type="date"
+                placeholder="选择结束日期"
+                style="width: 150px"
+                value-format="YYYY-MM-DD"
+              />
+            </el-form-item>
+            <el-form-item>
+              <el-button type="primary" @click="loadBenefitLogs" :icon="Search">查询</el-button>
+            </el-form-item>
+          </el-form>
+          <el-table :data="benefitLogs" stripe border style="width: 100%" v-loading="benefitLogsLoading">
+            <el-table-column prop="createTime" label="使用时间" width="170">
+              <template #default="{ row }">
+                {{ formatDateTime(row.createTime) }}
+              </template>
+            </el-table-column>
+            <el-table-column prop="benefitTypeName" label="权益类型" width="120">
+              <template #default="{ row }">
+                <el-tag :type="getBenefitTagType(row.benefitType)" size="small">{{ row.benefitTypeName }}</el-tag>
+              </template>
+            </el-table-column>
+            <el-table-column prop="relatedOrderNo" label="关联单号" width="160" />
+            <el-table-column label="权益内容" min-width="200">
+              <template #default="{ row }">
+                <span v-if="row.originalAmount !== null && row.originalAmount !== undefined">
+                  <span v-if="row.benefitType === 1 || row.benefitType === 3">
+                    原价：¥{{ row.originalAmount?.toFixed?.(2) || row.originalAmount }}
+                    <span style="color: #67c23a; margin: 0 4px">-</span>
+                    <span style="color: #67c23a">优惠：¥{{ row.benefitAmount?.toFixed?.(2) || row.benefitAmount }}</span>
+                    <span style="margin: 0 4px">=</span>
+                    <span style="color: #f56c6c">实付：¥{{ row.actualAmount?.toFixed?.(2) || row.actualAmount }}</span>
+                  </span>
+                  <span v-else-if="row.benefitType === 5">
+                    <span style="color: #e6a23c">获得 {{ row.benefitAmount }} 积分</span>
+                  </span>
+                  <span v-else>{{ row.benefitContent }}</span>
+                </span>
+                <span v-else>{{ row.benefitContent }}</span>
+              </template>
+            </el-table-column>
+            <el-table-column prop="operatorName" label="操作人" width="100" />
+            <el-table-column prop="remark" label="备注" width="150" show-overflow-tooltip />
+          </el-table>
+          <div class="pagination">
+            <el-pagination
+              v-model:current-page="benefitLogsPage.pageNum"
+              v-model:page-size="benefitLogsPage.pageSize"
+              :page-sizes="[10, 20, 50]"
+              :total="benefitLogsPage.total"
+              layout="total, sizes, prev, pager, next"
+              @size-change="handleBenefitLogsSizeChange"
+              @current-change="handleBenefitLogsPageChange"
+            />
+          </div>
+        </el-card>
+      </el-tab-pane>
+
       <el-tab-pane label="入住历史" name="stays">
         <el-card shadow="never">
           <el-empty description="入住历史功能开发中" />
@@ -476,11 +569,11 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import {
-  Coin, Medal, Lock, Unlock, ArrowLeft, Money, Dish
+  Coin, Medal, Lock, Unlock, ArrowLeft, Money, Dish, Download, Search
 } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/user'
 import api from '@/api'
@@ -863,6 +956,104 @@ const formatDateTime = (datetime) => {
   if (!datetime) return ''
   return datetime.replace('T', ' ').substring(0, 19)
 }
+
+const benefitLogs = ref([])
+const benefitLogsLoading = ref(false)
+const benefitLogsPage = reactive({
+  pageNum: 1,
+  pageSize: 10,
+  total: 0
+})
+const benefitLogsForm = reactive({
+  benefitType: null,
+  startTime: '',
+  endTime: ''
+})
+const exportingBenefitLogs = ref(false)
+
+const getBenefitTagType = (type) => {
+  const map = {
+    1: 'primary',
+    2: 'success',
+    3: 'warning',
+    4: 'info',
+    5: 'warning',
+    6: 'success',
+    7: 'primary'
+  }
+  return map[type] || 'info'
+}
+
+const loadBenefitLogs = async () => {
+  if (!memberId.value) return
+  benefitLogsLoading.value = true
+  try {
+    const params = {
+      memberId: memberId.value,
+      benefitType: benefitLogsForm.benefitType || undefined,
+      startTime: benefitLogsForm.startTime || undefined,
+      endTime: benefitLogsForm.endTime || undefined,
+      pageNum: benefitLogsPage.pageNum,
+      pageSize: benefitLogsPage.pageSize
+    }
+    const res = await api.memberBenefit.getBenefitLogPage(params)
+    if (res.code === 200) {
+      benefitLogs.value = res.data.list || []
+      benefitLogsPage.total = res.data.total || 0
+    }
+  } catch (e) {
+    console.error('加载权益使用记录失败', e)
+  } finally {
+    benefitLogsLoading.value = false
+  }
+}
+
+const handleBenefitLogsPageChange = (page) => {
+  benefitLogsPage.pageNum = page
+  loadBenefitLogs()
+}
+
+const handleBenefitLogsSizeChange = (size) => {
+  benefitLogsPage.pageSize = size
+  benefitLogsPage.pageNum = 1
+  loadBenefitLogs()
+}
+
+const handleExportBenefitLogs = async () => {
+  if (!memberId.value) return
+  exportingBenefitLogs.value = true
+  try {
+    const params = {
+      memberId: memberId.value,
+      benefitType: benefitLogsForm.benefitType || undefined,
+      startTime: benefitLogsForm.startTime || undefined,
+      endTime: benefitLogsForm.endTime || undefined
+    }
+    const res = await api.memberBenefit.exportBenefitLogs(params)
+    if (res.code === 200) {
+      const blob = new Blob([res.data], { type: 'application/vnd.ms-excel' })
+      const url = window.URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `权益使用记录_${memberInfo.value.customerName}_${new Date().toISOString().slice(0, 10)}.xlsx`
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      window.URL.revokeObjectURL(url)
+      ElMessage.success('导出成功')
+    }
+  } catch (e) {
+    console.error('导出权益使用记录失败', e)
+  } finally {
+    exportingBenefitLogs.value = false
+  }
+}
+
+watch(activeTab, (newTab) => {
+  if (newTab === 'benefitLogs' && benefitLogs.value.length === 0) {
+    loadBenefitLogs()
+  }
+})
 
 onMounted(() => {
   loadLevelOptions()

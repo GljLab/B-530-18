@@ -87,6 +87,70 @@
           </el-descriptions>
         </el-card>
 
+        <el-card v-if="lateCheckoutInfo" class="info-card late-checkout-card" style="margin-top: 16px">
+          <template #header>
+            <div class="card-header">
+              <span class="card-title">
+                <el-icon style="color: #67c23a; margin-right: 4px"><Clock /></el-icon>
+                延迟退房权益
+              </span>
+              <el-tag v-if="lateCheckoutInfo.eligible" type="success">已享有</el-tag>
+              <el-tag v-else type="info">未享有</el-tag>
+            </div>
+          </template>
+          <div class="late-checkout-content">
+            <div class="info-row">
+              <span class="label">标准退房时间：</span>
+              <span class="value">{{ lateCheckoutInfo.standardTime }}</span>
+            </div>
+            <div class="info-row" v-if="lateCheckoutInfo.eligible">
+              <span class="label">延迟退房至：</span>
+              <span class="value highlight">{{ lateCheckoutInfo.lateTime }}</span>
+            </div>
+            <div class="info-row" v-if="lateCheckoutInfo.eligible">
+              <span class="label">权益说明：</span>
+              <span class="value">{{ lateCheckoutInfo.remark }}</span>
+            </div>
+            <div class="info-row" v-if="!lateCheckoutInfo.eligible">
+              <span class="label">超时说明：</span>
+              <span class="value" style="color: #f56c6c">{{ lateCheckoutInfo.remark }}</span>
+            </div>
+          </div>
+        </el-card>
+
+        <el-card v-if="memberInfo" class="info-card member-point-card" style="margin-top: 16px">
+          <template #header>
+            <div class="card-header">
+              <span class="card-title">
+                <el-icon style="color: #e6a23c; margin-right: 4px"><Medal /></el-icon>
+                会员积分
+              </span>
+            </div>
+          </template>
+          <div class="member-point-content">
+            <div class="info-row">
+              <span class="label">会员等级：</span>
+              <span class="value">
+                <el-tag :type="memberLevelTagType">{{ memberInfo.levelName }}</el-tag>
+              </span>
+            </div>
+            <div class="info-row">
+              <span class="label">积分倍率：</span>
+              <span class="value">{{ memberInfo.pointRate }}倍</span>
+            </div>
+            <div class="info-row">
+              <span class="label">预计获得积分：</span>
+              <span class="value highlight" style="color: #e6a23c; font-size: 18px; font-weight: bold">
+                {{ estimatedPoints }} 积分
+              </span>
+            </div>
+            <div class="info-row">
+              <span class="label">当前积分余额：</span>
+              <span class="value" style="color: #409eff">{{ memberInfo.currentPoints }} 积分</span>
+            </div>
+          </div>
+        </el-card>
+
         <el-card class="info-card" style="margin-top: 16px">
           <template #header>
             <div class="card-header">
@@ -320,7 +384,7 @@
 import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { ArrowLeft, CircleCheckFilled, Search } from '@element-plus/icons-vue'
+import { ArrowLeft, CircleCheckFilled, Search, Clock, Medal } from '@element-plus/icons-vue'
 import api from '@/api'
 
 const route = useRoute()
@@ -353,6 +417,25 @@ const checkIn = ref({
 })
 
 const checkoutResult = ref({})
+
+const lateCheckoutInfo = ref(null)
+const memberInfo = ref(null)
+
+const memberLevelTagType = computed(() => {
+  if (!memberInfo.value?.levelName) return 'info'
+  const levelName = memberInfo.value.levelName
+  if (levelName.includes('钻石')) return 'danger'
+  if (levelName.includes('金卡')) return 'warning'
+  if (levelName.includes('银卡')) return 'info'
+  return 'success'
+})
+
+const estimatedPoints = computed(() => {
+  if (!memberInfo.value?.pointRate) return 0
+  const consumeAmount = Number(totalAmount.value) || 0
+  const basePoints = Math.floor(consumeAmount)
+  return Math.floor(basePoints * memberInfo.value.pointRate)
+})
 
 const potentialPoints = computed(() => Math.floor(Number(totalAmount.value) || 0))
 
@@ -421,6 +504,40 @@ const depositRefund = computed(() => {
   return refund > 0 ? refund.toFixed(2) : 0
 })
 
+const loadLateCheckoutInfo = async () => {
+  if (!checkInId.value || !checkIn.value?.memberId) {
+    lateCheckoutInfo.value = {
+      eligible: false,
+      standardTime: '12:00',
+      remark: '非会员退房时间为12:00，超时需收取费用'
+    }
+    return
+  }
+  try {
+    const res = await api.memberBenefit.getLateCheckout(checkInId.value)
+    if (res.code === 200 && res.data) {
+      lateCheckoutInfo.value = res.data
+    }
+  } catch (e) {
+    console.error('加载延迟退房信息失败', e)
+  }
+}
+
+const loadMemberInfo = async () => {
+  if (!checkIn.value?.memberId) {
+    memberInfo.value = null
+    return
+  }
+  try {
+    const res = await api.member.getById(checkIn.value.memberId)
+    if (res.code === 200 && res.data) {
+      memberInfo.value = res.data
+    }
+  } catch (e) {
+    console.error('加载会员信息失败', e)
+  }
+}
+
 const loadDetail = async () => {
   if (!checkInId.value) {
     return
@@ -437,6 +554,9 @@ const loadDetail = async () => {
       checkoutForm.discount = res.data.discount || 0
       checkoutForm.paidAmount = res.data.paidAmount || 0
       checkoutForm.returnedKeyCards = res.data.keyCardCount || 0
+
+      await loadMemberInfo()
+      await loadLateCheckoutInfo()
     }
   } catch (e) {
     console.error('加载入住单详情失败', e)
@@ -527,7 +647,7 @@ const handleCheckout = async () => {
       remark: checkoutForm.remark
     }
 
-    const res = await api.checkin.checkout(data)
+    const res = await api.memberBenefit.checkout(data)
     if (res.code === 200) {
       checkoutResult.value = res.data
       successDialogVisible.value = true
@@ -799,6 +919,97 @@ onMounted(() => {
     color: #409eff;
     font-size: 14px;
     font-weight: 500;
+  }
+}
+
+.late-checkout-card {
+  border-left: 4px solid #67c23a;
+
+  .card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .late-checkout-content {
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+
+      &:last-child {
+        padding-bottom: 0;
+      }
+
+      .label {
+        color: #606266;
+      }
+
+      .value {
+        color: #303133;
+
+        &.highlight {
+          color: #67c23a;
+          font-weight: 600;
+        }
+      }
+    }
+  }
+}
+
+.member-point-card {
+  border-left: 4px solid #e6a23c;
+
+  .card-header {
+    display: flex;
+    align-items: center;
+  }
+
+  .member-point-content {
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+
+      &:last-child {
+        padding-bottom: 0;
+      }
+
+      .label {
+        color: #606266;
+      }
+
+      .value {
+        color: #303133;
+
+        &.highlight {
+          color: #e6a23c;
+          font-weight: 600;
+        }
+      }
+    }
+  }
+}
+
+.point-earn-detail {
+  margin-top: 16px;
+  text-align: left;
+
+  .info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+
+    .label {
+      color: #606266;
+    }
+
+    .value {
+      color: #303133;
+    }
   }
 }
 </style>

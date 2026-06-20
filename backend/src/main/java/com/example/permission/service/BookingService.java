@@ -77,6 +77,9 @@ public class BookingService {
     @Autowired
     private MemberService memberService;
 
+    @Autowired
+    private MemberBenefitService memberBenefitService;
+
     public Map<Long, List<Room>> queryAvailableRooms(LocalDate checkInDate, LocalDate checkOutDate,
                                                       Long roomTypeId, Long floorId, String orientation,
                                                       String viewType) {
@@ -361,8 +364,23 @@ public class BookingService {
                     .multiply(BigDecimal.valueOf(days));
         }
 
+        BigDecimal memberDiscount = BigDecimal.ZERO;
+        BigDecimal memberDiscountRate = null;
+        String memberDiscountRemark = null;
+
+        if (booking.getMemberId() != null) {
+            Map<String, Object> benefitResult = memberBenefitService.calculateBookingBenefits(
+                    booking.getMemberId(), roomTotal, roomType.getId());
+            if (Boolean.TRUE.equals(benefitResult.get("hasDiscount"))) {
+                memberDiscount = (BigDecimal) benefitResult.get("discountAmount");
+                memberDiscountRate = (BigDecimal) benefitResult.get("discountRate");
+                memberDiscountRemark = (String) benefitResult.get("discountRemark");
+            }
+        }
+
         BigDecimal totalAmount = roomTotal.add(extraBedTotal)
                 .subtract(booking.getDiscount() != null ? booking.getDiscount() : BigDecimal.ZERO)
+                .subtract(memberDiscount)
                 .add(booking.getOtherFee() != null ? booking.getOtherFee() : BigDecimal.ZERO);
 
         String bookingNo = generateBookingNo();
@@ -377,6 +395,9 @@ public class BookingService {
         booking.setRoomPrice(roomType.getBasePrice());
         booking.setRoomTotal(roomTotal);
         booking.setExtraBedTotal(extraBedTotal);
+        booking.setMemberDiscount(memberDiscount);
+        booking.setMemberDiscountRate(memberDiscountRate);
+        booking.setMemberDiscountRemark(memberDiscountRemark);
         booking.setTotalAmount(totalAmount.setScale(2, RoundingMode.HALF_UP));
         booking.setStatus(1);
         booking.setDeleted(0);
@@ -403,6 +424,10 @@ public class BookingService {
             booking.setTotalAmount(finalAmount.setScale(2, RoundingMode.HALF_UP));
             booking.setUpdateTime(LocalDateTime.now());
             bookingMapper.update(booking);
+        }
+
+        if (booking.getMemberId() != null && memberDiscount.compareTo(BigDecimal.ZERO) > 0) {
+            memberBenefitService.applyBookingDiscount(booking.getId(), loginUser);
         }
 
         // 统一自动生成预订明细，不依赖前端传入

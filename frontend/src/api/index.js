@@ -625,6 +625,22 @@ const api = {
     usage: () => request.get('/member/pointStatistics/usage'),
     trend: (months) => request.get('/member/pointStatistics/trend', { params: { months } }),
     conversion: () => request.get('/member/pointStatistics/conversion')
+  },
+
+  memberBenefit: {
+    getInfo: (customerId) => request.get(`/member/benefit/info/${customerId}`),
+    calculateBooking: (params) => request.get('/member/benefit/calculate-booking', { params }),
+    applyBookingDiscount: (bookingId) => request.post(`/member/benefit/apply-booking-discount/${bookingId}`),
+    calculateDeposit: (params) => request.get('/member/benefit/calculate-deposit', { params }),
+    applyDepositReduction: (checkInId, params) => request.post(`/member/benefit/apply-deposit-reduction/${checkInId}`, null, { params }),
+    getUpgradeRoomTypes: (params) => request.get('/member/benefit/upgrade-room-types', { params }),
+    applyRoomUpgrade: (checkInId, params) => request.post(`/member/benefit/apply-room-upgrade/${checkInId}`, null, { params }),
+    getLateCheckoutEligibility: (memberId) => request.get(`/member/benefit/late-checkout-eligibility/${memberId}`),
+    applyLateCheckout: (checkInId) => request.post(`/member/benefit/apply-late-checkout/${checkInId}`),
+    awardPoints: (checkInId) => request.post(`/member/benefit/award-points/${checkInId}`),
+    getPreferredRooms: (rooms) => request.post('/member/benefit/preferred-rooms', rooms),
+    getLogPage: (params) => request.get('/member/benefit/log/page', { params }),
+    getLogList: (params) => request.get('/member/benefit/log/list', { params })
   }
 }
 

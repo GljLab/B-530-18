@@ -94,6 +94,9 @@ public class CheckInService {
     @Autowired
     private MemberService memberService;
 
+    @Autowired
+    private MemberBenefitService memberBenefitService;
+
     private LoginUser getCurrentUser() {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if (principal instanceof LoginUser) {
@@ -231,6 +234,24 @@ public class CheckInService {
         checkIn.setTotalAmount(roomTotal.add(booking.getExtraBedTotal()).subtract(checkIn.getDiscount()));
         checkIn.setPaidAmount(booking.getPaidAmount() != null ? booking.getPaidAmount() : BigDecimal.ZERO);
         checkIn.setPayableAmount(checkIn.getTotalAmount().subtract(checkIn.getPaidAmount()));
+
+        BigDecimal standardDeposit = depositAmount;
+        BigDecimal depositReductionAmount = BigDecimal.ZERO;
+        BigDecimal depositReductionRate = null;
+
+        if (booking.getMemberId() != null && standardDeposit != null && standardDeposit.compareTo(BigDecimal.ZERO) > 0) {
+            Map<String, Object> depositResult = memberBenefitService.calculateDepositReduction(
+                    booking.getMemberId(), standardDeposit);
+            if (Boolean.TRUE.equals(depositResult.get("hasReduction"))) {
+                depositReductionAmount = (BigDecimal) depositResult.get("reductionAmount");
+                depositReductionRate = (BigDecimal) depositResult.get("reductionRate");
+                depositAmount = (BigDecimal) depositResult.get("actualDeposit");
+            }
+        }
+
+        checkIn.setStandardDeposit(standardDeposit);
+        checkIn.setDepositReductionAmount(depositReductionAmount);
+        checkIn.setDepositReductionRate(depositReductionRate);
         checkIn.setDepositAmount(depositAmount);
         checkIn.setDepositMethod(depositMethod);
         checkIn.setDepositVoucherNo(depositVoucherNo);
@@ -295,6 +316,10 @@ public class CheckInService {
         addOperationLog(checkIn.getId(), checkIn.getCheckInNo(), 1, "办理入住",
                 "从预订单" + booking.getBookingNo() + "办理入住，房间：" + room.getRoomNumber(),
                 user.getUserId(), user.getUsername(), "酒店管理员");
+
+        if (booking.getMemberId() != null && depositReductionAmount.compareTo(BigDecimal.ZERO) > 0) {
+            memberBenefitService.applyDepositReduction(checkIn.getId(), standardDeposit, user);
+        }
 
         return checkIn;
     }
@@ -397,6 +422,24 @@ public class CheckInService {
         checkIn.setTotalAmount(roomTotal);
         checkIn.setPaidAmount(BigDecimal.ZERO);
         checkIn.setPayableAmount(roomTotal);
+
+        BigDecimal standardDepositWalkIn = depositAmount;
+        BigDecimal depositReductionAmountWalkIn = BigDecimal.ZERO;
+        BigDecimal depositReductionRateWalkIn = null;
+
+        if (memberId != null && standardDepositWalkIn != null && standardDepositWalkIn.compareTo(BigDecimal.ZERO) > 0) {
+            Map<String, Object> depositResult = memberBenefitService.calculateDepositReduction(
+                    memberId, standardDepositWalkIn);
+            if (Boolean.TRUE.equals(depositResult.get("hasReduction"))) {
+                depositReductionAmountWalkIn = (BigDecimal) depositResult.get("reductionAmount");
+                depositReductionRateWalkIn = (BigDecimal) depositResult.get("reductionRate");
+                depositAmount = (BigDecimal) depositResult.get("actualDeposit");
+            }
+        }
+
+        checkIn.setStandardDeposit(standardDepositWalkIn);
+        checkIn.setDepositReductionAmount(depositReductionAmountWalkIn);
+        checkIn.setDepositReductionRate(depositReductionRateWalkIn);
         checkIn.setDepositAmount(depositAmount);
         checkIn.setDepositMethod(depositMethod);
         checkIn.setDepositVoucherNo(depositVoucherNo);
@@ -477,6 +520,10 @@ public class CheckInService {
         addOperationLog(checkIn.getId(), checkIn.getCheckInNo(), 1, "散客入住",
                 "散客入住，房间：" + room.getRoomNumber() + "，客户：" + savedCustomer.getName(),
                 user.getUserId(), user.getUsername(), "酒店管理员");
+
+        if (memberId != null && depositReductionAmountWalkIn.compareTo(BigDecimal.ZERO) > 0) {
+            memberBenefitService.applyDepositReduction(checkIn.getId(), standardDepositWalkIn, user);
+        }
 
         return checkIn;
     }
