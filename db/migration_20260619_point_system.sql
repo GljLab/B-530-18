@@ -141,10 +141,10 @@ INSERT INTO sys_role_menu (role_id, menu_id) VALUES
 
 -- =============================================
 -- 13. 分配角色权限 - 客服人员(role_id=8 即customer_service): 查看积分明细，协助会员使用积分
--- 注意：需要根据实际role_id调整
+-- 注意：role_id=8的客服角色可能不存在，此处注释掉；且role_id=6已在上面分配
 -- =============================================
-INSERT INTO sys_role_menu (role_id, menu_id) VALUES
-(6, 1250), (6, 1251);
+-- INSERT INTO sys_role_menu (role_id, menu_id) VALUES
+-- (8, 1250), (8, 1251);
 
 -- =============================================
 -- 14. 分配角色权限 - 财务人员(role_id=7): 查看积分统计
