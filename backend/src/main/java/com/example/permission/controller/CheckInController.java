@@ -86,6 +86,7 @@ public class CheckInController {
         Integer bookingSource = params.get("bookingSource") != null ? Integer.valueOf(params.get("bookingSource").toString()) : 1;
         Long agreementUnitId = params.get("agreementUnitId") != null ? Long.valueOf(params.get("agreementUnitId").toString()) : null;
         Integer guaranteeType = params.get("guaranteeType") != null ? Integer.valueOf(params.get("guaranteeType").toString()) : null;
+        Long memberId = params.get("memberId") != null ? Long.valueOf(params.get("memberId").toString()) : null;
 
         Customer customer = new Customer();
         if (customerMap != null) {
@@ -118,7 +119,7 @@ public class CheckInController {
 
         CheckIn checkIn = checkInService.walkInCheckIn(roomTypeId, roomId, customer, guests,
                 checkInDate, checkOutDate, depositAmount, depositMethod, depositVoucherNo,
-                keyCardCount, specialRequirements, remark, bookingSource, agreementUnitId, guaranteeType);
+                keyCardCount, specialRequirements, remark, bookingSource, agreementUnitId, guaranteeType, memberId);
         return Result.success(checkIn);
     }
 

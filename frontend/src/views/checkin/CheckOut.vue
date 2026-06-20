@@ -291,18 +291,21 @@
             <span class="label">退还押金：</span>
             <span class="value" style="color: #67c23a">¥{{ depositRefund }}</span>
           </div>
-          <div class="info-row" v-if="pointEarnResult.earnedPoints > 0">
-            <span class="label">获得积分：</span>
-            <span class="value" style="color: #e6a23c; font-weight: bold">{{ pointEarnResult.earnedPoints }} 积分</span>
+          <div class="info-row" v-if="checkoutResult.memberId && checkoutResult.earnedPoints > 0">
+            <span class="label">本次获得积分：</span>
+            <span class="value" style="color: #e6a23c; font-weight: bold">{{ checkoutResult.earnedPoints }}积分</span>
           </div>
         </div>
-        <div v-if="pointEarnResult.earnedPoints > 0" class="point-earn-detail">
+        <div v-if="checkoutResult.memberId && checkoutResult.pointInfo" class="point-earn-detail">
           <el-divider content-position="left">积分计算明细</el-divider>
-          <div class="info-row"><span class="label">消费金额：</span><span class="value">¥{{ pointEarnResult.consumeAmount }}</span></div>
-          <div class="info-row"><span class="label">基础积分：</span><span class="value">{{ pointEarnResult.basePoints }}</span></div>
-          <div class="info-row"><span class="label">等级倍率：</span><span class="value">{{ pointEarnResult.pointRate }}倍</span></div>
-          <div class="info-row"><span class="label">实际获得：</span><span class="value" style="color: #e6a23c; font-weight: bold">{{ pointEarnResult.earnedPoints }} 积分</span></div>
-          <div class="info-row"><span class="label">积分余额：</span><span class="value" style="color: #409eff">{{ pointEarnResult.balanceAfter }}</span></div>
+          <div class="info-row"><span class="label">消费金额：</span><span class="value">¥{{ checkoutResult.pointInfo.consumeAmount }}元</span></div>
+          <div class="info-row"><span class="label">基础积分：</span><span class="value">{{ checkoutResult.pointInfo.basePoints }}积分</span></div>
+          <div class="info-row"><span class="label">等级倍率：</span><span class="value">{{ checkoutResult.pointInfo.pointRate }}倍（{{ checkoutResult.memberLevelName }}）</span></div>
+          <div class="info-row"><span class="label">实际获得：</span><span class="value" style="color: #e6a23c; font-weight: bold">{{ checkoutResult.pointInfo.earnedPoints }}积分</span></div>
+          <div class="info-row"><span class="label">积分余额：</span><span class="value" style="color: #409eff">{{ checkoutResult.pointInfo.balanceAfter }}积分</span></div>
+        </div>
+        <div v-if="!checkoutResult.memberId" class="non-member-prompt">
+          您本次消费可获得{{ potentialPoints }}积分，立即办理会员卡即可领取
         </div>
       </div>
       <template #footer>
@@ -350,7 +353,8 @@ const checkIn = ref({
 })
 
 const checkoutResult = ref({})
-const pointEarnResult = ref({})
+
+const potentialPoints = computed(() => Math.floor(Number(totalAmount.value) || 0))
 
 const checkoutForm = reactive({
   checkInId: null,
@@ -526,24 +530,6 @@ const handleCheckout = async () => {
     const res = await api.checkin.checkout(data)
     if (res.code === 200) {
       checkoutResult.value = res.data
-
-      if (checkIn.value.customerId) {
-        try {
-          const memberRes = await api.member.getByCustomerId(checkIn.value.customerId)
-          if (memberRes.code === 200 && memberRes.data) {
-            const earnRes = await api.member.earnPointsOnCheckout({
-              memberId: memberRes.data.id,
-              consumeAmount: totalAmount.value
-            })
-            if (earnRes.code === 200) {
-              pointEarnResult.value = earnRes.data
-            }
-          }
-        } catch (e) {
-          console.error('自动发放积分失败', e)
-        }
-      }
-
       successDialogVisible.value = true
     }
   } catch (e) {
@@ -803,6 +789,16 @@ onMounted(() => {
         font-size: 13px;
       }
     }
+  }
+
+  .non-member-prompt {
+    margin-top: 12px;
+    background: #ecf5ff;
+    border-radius: 8px;
+    padding: 12px 16px;
+    color: #409eff;
+    font-size: 14px;
+    font-weight: 500;
   }
 }
 </style>

@@ -110,6 +110,11 @@
             <p>{{ selectedBooking.specialRequirements || '无' }}</p>
           </div>
 
+          <div v-if="bookingMemberInfo" class="member-info-section">
+            <h4>关联会员</h4>
+            <p>卡号 {{ bookingMemberInfo.memberNo }}，等级 {{ bookingMemberInfo.levelName }}，可用积分 {{ bookingMemberInfo.currentPoints }}</p>
+          </div>
+
           <div class="step-actions">
             <el-button type="primary" @click="nextStep">下一步</el-button>
           </div>
@@ -335,6 +340,10 @@
                   <span class="label">入住人数：</span>
                   <span class="value">{{ guests.length }}人</span>
                 </div>
+                <div v-if="bookingMemberInfo" class="info-item">
+                  <span class="label">关联会员：</span>
+                  <span class="value">卡号 {{ bookingMemberInfo.memberNo }}，等级 {{ bookingMemberInfo.levelName }}，可用积分 {{ bookingMemberInfo.currentPoints }}</span>
+                </div>
               </el-card>
             </el-col>
           </el-row>
@@ -466,7 +475,9 @@ const searchBookings = async () => {
   }
 }
 
-const selectBooking = (booking) => {
+const bookingMemberInfo = ref(null)
+
+const selectBooking = async (booking) => {
   selectedBooking.value = booking
   bookingId.value = booking.id
   guests.value = [{
@@ -478,6 +489,18 @@ const selectBooking = (booking) => {
   }]
   if (booking.roomId) {
     selectedRoomId.value = booking.roomId
+  }
+  if (booking.memberId) {
+    try {
+      const res = await api.member.getById(booking.memberId)
+      if (res.code === 200) {
+        bookingMemberInfo.value = res.data || null
+      }
+    } catch (e) {
+      console.error('加载会员信息失败', e)
+    }
+  } else {
+    bookingMemberInfo.value = null
   }
 }
 
@@ -720,6 +743,26 @@ const loadBookingDetail = async () => {
     p {
       margin: 0;
       color: #606266;
+    }
+  }
+
+  .member-info-section {
+    margin-top: 20px;
+    padding: 16px;
+    background: #fdf6ec;
+    border: 1px solid #faecd8;
+    border-radius: 4px;
+
+    h4 {
+      margin: 0 0 8px;
+      font-size: 14px;
+      color: #e6a23c;
+    }
+
+    p {
+      margin: 0;
+      color: #606266;
+      font-size: 14px;
     }
   }
 

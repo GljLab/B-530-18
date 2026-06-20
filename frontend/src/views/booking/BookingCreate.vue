@@ -279,6 +279,22 @@
                   </div>
                 </div>
                 <el-divider />
+                <div v-if="customerMemberInfo" class="pref-section">
+                  <div class="pref-label">会员信息</div>
+                  <div class="pref-item">
+                    <span class="pref-key">会员卡号：</span>
+                    <span class="pref-value">{{ customerMemberInfo.memberNo || '-' }}</span>
+                  </div>
+                  <div class="pref-item">
+                    <span class="pref-key">会员等级：</span>
+                    <el-tag size="small" type="warning">{{ customerMemberInfo.levelName || customerMemberInfo.level || '-' }}</el-tag>
+                  </div>
+                  <div class="pref-item">
+                    <span class="pref-key">可用积分：</span>
+                    <span class="pref-value" style="color: #e6a23c; font-weight: 600">{{ customerMemberInfo.availablePoints ?? 0 }}</span>
+                  </div>
+                </div>
+                <el-divider v-if="customerMemberInfo" />
                 <div class="pref-section">
                   <div class="pref-label">入住偏好</div>
                   <div class="pref-tags">
@@ -397,6 +413,46 @@
                 </el-form-item>
               </el-col>
             </el-row>
+
+            <template v-if="customerMemberInfo">
+              <el-divider content-position="left">积分抵扣</el-divider>
+              <el-alert
+                v-if="(roomTotal + extraBedTotal + step3Form.otherFee - step3Form.discount) < 100"
+                title="订单金额不足100元，不可使用积分抵扣"
+                type="warning"
+                :closable="false"
+                show-icon
+                style="margin-bottom: 16px"
+              />
+              <el-row :gutter="24">
+                <el-col :span="12">
+                  <el-form-item label="使用积分">
+                    <el-input-number
+                      v-model="pointsUsed"
+                      :min="0"
+                      :max="maxPointsUsable"
+                      :step="100"
+                      :precision="0"
+                      :disabled="(roomTotal + extraBedTotal + step3Form.otherFee - step3Form.discount) < 100"
+                      style="width: 100%"
+                    />
+                  </el-form-item>
+                </el-col>
+                <el-col :span="12">
+                  <el-form-item label="抵扣金额">
+                    <span style="font-size: 18px; font-weight: 600; color: #67c23a">-¥{{ pointsDeductionAmount.toFixed(2) }}</span>
+                  </el-form-item>
+                </el-col>
+              </el-row>
+              <el-row :gutter="24">
+                <el-col :span="24">
+                  <div style="color: #909399; font-size: 13px; line-height: 1.8; padding-left: 110px">
+                    <div>可用积分：<span style="color: #e6a23c; font-weight: 600">{{ customerMemberInfo.availablePoints ?? 0 }}</span> 积分（100积分=10元）</div>
+                    <div>单次最多使用5000积分，最低消费100元，最多抵扣订单金额30%</div>
+                  </div>
+                </el-col>
+              </el-row>
+            </template>
 
             <el-divider />
 
@@ -554,6 +610,10 @@
                   <span class="confirm-label">优惠折扣：</span>
                   <span class="confirm-value discount">-¥{{ step3Form.discount.toFixed(2) }}</span>
                 </div>
+                <div v-if="pointsUsed > 0" class="confirm-item">
+                  <span class="confirm-label">积分抵扣：</span>
+                  <span class="confirm-value discount">-¥{{ pointsDeductionAmount.toFixed(2) }}（使用{{ pointsUsed }}积分）</span>
+                </div>
                 <el-divider />
                 <div class="confirm-item total">
                   <span class="confirm-label">应付总额：</span>
@@ -649,6 +709,8 @@ const isBlacklist = ref(false)
 const customerSearchKeyword = ref('')
 const customerSearchResults = ref([])
 const customerSearchTimer = ref(null)
+const customerMemberInfo = ref(null)
+const pointsUsed = ref(0)
 
 const roomTypeInfo = reactive({
   basePrice: 298,
@@ -745,7 +807,20 @@ const extraBedTotal = computed(() => {
 })
 
 const totalAmount = computed(() => {
-  return roomTotal.value + extraBedTotal.value + step3Form.otherFee - step3Form.discount
+  return roomTotal.value + extraBedTotal.value + step3Form.otherFee - step3Form.discount - pointsDeductionAmount.value
+})
+
+const pointsDeductionAmount = computed(() => {
+  return pointsUsed.value * 0.1
+})
+
+const maxPointsUsable = computed(() => {
+  if (!customerMemberInfo.value) return 0
+  const availablePoints = customerMemberInfo.value.availablePoints ?? 0
+  const baseAmount = roomTotal.value + extraBedTotal.value + step3Form.otherFee - step3Form.discount
+  const maxDeduction = baseAmount * 0.30
+  const maxPointsFromCap = Math.floor(maxDeduction / 0.1)
+  return Math.min(availablePoints, 5000, maxPointsFromCap)
 })
 
 const previewBookingNo = computed(() => {
@@ -910,6 +985,8 @@ const handleCustomerSearch = () => {
 
 const handleSelectCustomer = async (customer) => {
   selectedCustomer.value = customer
+  customerMemberInfo.value = null
+  pointsUsed.value = 0
   try {
     const res = await api.customer.getPreference(customer.id)
     if (res.code === 200 && res.data) {
@@ -922,6 +999,12 @@ const handleSelectCustomer = async (customer) => {
   } catch {
     isBlacklist.value = false
   }
+  try {
+    const res = await api.member.getByCustomerId(customer.id)
+    if (res.code === 200 && res.data) {
+      customerMemberInfo.value = res.data
+    }
+  } catch {}
   if (!step2Form.guests[0]?.name) {
     step2Form.guests[0].name = customer.name
   }
@@ -1063,6 +1146,10 @@ const handleSubmit = async () => {
       discount: step3Form.discount,
       discountRemark: step3Form.discountRemark,
       totalAmount: totalAmount.value,
+      pointsUsed: pointsUsed.value,
+      pointsDeductionAmount: pointsDeductionAmount.value,
+      memberId: customerMemberInfo.value?.id || null,
+      memberNo: customerMemberInfo.value?.memberNo || null,
       details: priceDetails.value
     }
     const res = await api.booking.create(payload)

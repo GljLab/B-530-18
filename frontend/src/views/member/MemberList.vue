@@ -358,7 +358,25 @@
           </el-select>
         </el-form-item>
         <el-form-item label="推荐人卡号">
-          <el-input v-model="registerForm.referrerNo" placeholder="请输入推荐人会员卡号（选填）" />
+          <div style="width: 100%">
+            <el-input
+              v-model="referrerMemberNo"
+              placeholder="请输入推荐人会员卡号（可选）"
+              @blur="validateReferrer"
+            >
+              <template #suffix>
+                <el-tag v-if="referrerInfo" type="success" size="small" style="margin-right: 4px">
+                  {{ referrerInfo.customerName }}
+                </el-tag>
+              </template>
+            </el-input>
+            <div v-if="referrerError" style="color: #f56c6c; font-size: 12px; margin-top: 4px">
+              {{ referrerError }}
+            </div>
+            <div style="color: #909399; font-size: 12px; margin-top: 4px">
+              推荐人将获得100积分奖励
+            </div>
+          </div>
         </el-form-item>
       </el-form>
       <template #footer>
@@ -449,8 +467,7 @@ const registerForm = reactive({
   phone: '',
   idType: 1,
   idNumber: '',
-  registerSource: 1,
-  referrerNo: ''
+  registerSource: 1
 })
 
 const registerRules = {
@@ -462,6 +479,9 @@ const registerRules = {
 
 const customerOptions = ref([])
 const customerSearchLoading = ref(false)
+const referrerMemberNo = ref('')
+const referrerInfo = ref(null)
+const referrerError = ref('')
 
 const loadLevelOptions = async () => {
   try {
@@ -693,7 +713,9 @@ const handleRegister = () => {
   registerForm.idType = 1
   registerForm.idNumber = ''
   registerForm.registerSource = 1
-  registerForm.referrerNo = ''
+  referrerMemberNo.value = ''
+  referrerInfo.value = null
+  referrerError.value = ''
   registerDialogVisible.value = true
 }
 
@@ -715,6 +737,22 @@ const searchCustomer = async (query) => {
   }
 }
 
+const validateReferrer = async () => {
+  referrerInfo.value = null
+  referrerError.value = ''
+  if (!referrerMemberNo.value.trim()) return
+  try {
+    const res = await api.member.getByMemberNo(referrerMemberNo.value.trim())
+    if (res.code === 200 && res.data) {
+      referrerInfo.value = res.data
+    } else {
+      referrerError.value = '未找到该会员卡号对应的会员'
+    }
+  } catch {
+    referrerError.value = '验证推荐人失败，请稍后重试'
+  }
+}
+
 const handleRegisterSubmit = async () => {
   if (!registerFormRef.value) return
   try {
@@ -725,32 +763,15 @@ const handleRegisterSubmit = async () => {
 
   registerDialogSaving.value = true
   try {
+    const referrerId = referrerInfo.value ? referrerInfo.value.id : null
     let res
     if (registerForm.registerType === 1) {
-      let referrerId = null
-      if (registerForm.referrerNo) {
-        const referrerRes = await api.member.getByMemberNo(registerForm.referrerNo)
-        if (referrerRes.code === 200 && referrerRes.data) {
-          referrerId = referrerRes.data.id
-        } else {
-          ElMessage.warning('推荐人卡号不存在，将忽略推荐人信息')
-        }
-      }
       res = await api.member.registerFromCustomer({
         customerId: registerForm.customerId,
         registerSource: registerForm.registerSource,
         referrerId
       })
     } else {
-      let referrerId = null
-      if (registerForm.referrerNo) {
-        const referrerRes = await api.member.getByMemberNo(registerForm.referrerNo)
-        if (referrerRes.code === 200 && referrerRes.data) {
-          referrerId = referrerRes.data.id
-        } else {
-          ElMessage.warning('推荐人卡号不存在，将忽略推荐人信息')
-        }
-      }
       res = await api.member.registerNew({
         name: registerForm.name,
         phone: registerForm.phone,

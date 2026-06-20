@@ -1,5 +1,6 @@
 package com.example.permission.entity;
 
+import com.mybatisflex.annotation.Column;
 import com.mybatisflex.annotation.Id;
 import com.mybatisflex.annotation.KeyType;
 import com.mybatisflex.annotation.Table;
@@ -8,6 +9,7 @@ import lombok.Data;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Map;
 
 @Data
 @Table("check_out_record")
@@ -93,4 +95,16 @@ public class CheckOutRecord {
     private String remark;
 
     private LocalDateTime createTime;
+
+    @Column(ignore = true)
+    private Map<String, Object> pointInfo;
+
+    @Column(ignore = true)
+    private Long memberId;
+
+    @Column(ignore = true)
+    private String memberNo;
+
+    @Column(ignore = true)
+    private BigDecimal earnedPoints;
 }

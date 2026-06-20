@@ -8,6 +8,7 @@ import com.example.permission.entity.MemberLevel;
 import com.example.permission.entity.MemberLevelLog;
 import com.example.permission.entity.MemberPointLog;
 import com.example.permission.entity.PointConsumeRule;
+import com.example.permission.entity.PointEarnRule;
 import com.example.permission.mapper.CustomerMapper;
 import com.example.permission.mapper.MemberLevelLogMapper;
 import com.example.permission.mapper.MemberLevelMapper;
@@ -202,6 +203,40 @@ public class MemberService {
         levelLog.setCreateTime(LocalDateTime.now());
         memberLevelLogMapper.insert(levelLog);
 
+        if (referrer != null) {
+            PointEarnRule referralRule = pointRuleService.getEnabledEarnRuleByType(4);
+            BigDecimal referralPoints = referralRule != null ? referralRule.getPointAmount() : new BigDecimal("100");
+
+            if (referrer.getStatus() != 0) {
+                BigDecimal balanceBefore = referrer.getCurrentPoints();
+                BigDecimal balanceAfter = balanceBefore.add(referralPoints);
+
+                referrer.setCurrentPoints(balanceAfter);
+                referrer.setTotalPoints(referrer.getTotalPoints().add(referralPoints));
+                referrer.setUpdateTime(LocalDateTime.now());
+                memberMapper.update(referrer);
+
+                MemberPointLog refLog = new MemberPointLog();
+                refLog.setMemberId(referrer.getId());
+                refLog.setMemberNo(referrer.getMemberNo());
+                refLog.setPointType(1);
+                refLog.setPoints(referralPoints);
+                refLog.setBalanceBefore(balanceBefore);
+                refLog.setBalanceAfter(balanceAfter);
+                refLog.setReasonType(4);
+                refLog.setReason("推荐积分");
+                refLog.setDetail("推荐会员" + member.getMemberNo() + "（" + member.getCustomerName() + "）注册，获得" + referralPoints + "积分");
+                refLog.setRelatedOrderType(2);
+                refLog.setRelatedOrderId(member.getId());
+                refLog.setOperatorId(operatorId);
+                refLog.setOperatorName(operatorName);
+                refLog.setCreateTime(LocalDateTime.now());
+                memberPointLogMapper.insert(refLog);
+
+                checkAndUpgradeLevel(referrer, operatorId, operatorName);
+            }
+        }
+
         return member;
     }
 
@@ -298,6 +333,41 @@ public class MemberService {
         log.setMemberId(memberId);
         log.setMemberNo(member.getMemberNo());
         log.setPointType(2);
+        log.setPoints(points);
+        log.setBalanceBefore(balanceBefore);
+        log.setBalanceAfter(balanceAfter);
+        log.setReasonType(reasonType);
+        log.setReason(reason);
+        log.setDetail(detail);
+        log.setOperatorId(operatorId);
+        log.setOperatorName(operatorName);
+        log.setCreateTime(LocalDateTime.now());
+        memberPointLogMapper.insert(log);
+    }
+
+    @Transactional
+    public void refundPoints(Long memberId, BigDecimal points, Integer reasonType, String reason,
+                             String detail, Long operatorId, String operatorName) {
+        if (points == null || points.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new BusinessException("退还积分数量必须大于0");
+        }
+
+        Member member = memberMapper.selectOneById(memberId);
+        if (member == null || member.getDeleted() == 1) {
+            throw new BusinessException("会员不存在");
+        }
+
+        BigDecimal balanceBefore = member.getCurrentPoints();
+        BigDecimal balanceAfter = balanceBefore.add(points);
+
+        member.setCurrentPoints(balanceAfter);
+        member.setUpdateTime(LocalDateTime.now());
+        memberMapper.update(member);
+
+        MemberPointLog log = new MemberPointLog();
+        log.setMemberId(memberId);
+        log.setMemberNo(member.getMemberNo());
+        log.setPointType(1);
         log.setPoints(points);
         log.setBalanceBefore(balanceBefore);
         log.setBalanceAfter(balanceAfter);

@@ -92,6 +92,10 @@ public class BookingController {
                 LocalDateTime.parse(params.get("expectedArrivalTime").toString(), DateTimeFormatter.ISO_LOCAL_DATE_TIME) : null;
         String specialRequirements = params.get("specialRequirements") != null ? params.get("specialRequirements").toString() : null;
 
+        Long memberId = params.get("memberId") != null ? Long.valueOf(params.get("memberId").toString()) : null;
+        String memberNo = params.get("memberNo") != null ? params.get("memberNo").toString() : null;
+        BigDecimal pointsUsed = params.get("pointsUsed") != null ? new BigDecimal(params.get("pointsUsed").toString()) : null;
+
         List<Map<String, Object>> detailList = params.get("details") != null ?
                 (List<Map<String, Object>>) params.get("details") : null;
         List<BookingDetail> details = null;
@@ -126,6 +130,9 @@ public class BookingController {
         booking.setGuaranteeType(guaranteeType);
         booking.setExpectedArrivalTime(expectedArrivalTime);
         booking.setSpecialRequirements(specialRequirements);
+        booking.setMemberId(memberId);
+        booking.setMemberNo(memberNo);
+        booking.setPointsUsed(pointsUsed);
 
         Booking result = bookingService.createBooking(booking, details, loginUser);
         return Result.success(result);

@@ -7,6 +7,7 @@ import com.example.permission.mapper.AgreementUnitMapper;
 import com.example.permission.mapper.CreditBillMapper;
 import com.example.permission.mapper.*;
 import com.example.permission.security.LoginUser;
+import com.example.permission.service.MemberService;
 import com.mybatisflex.core.paginate.Page;
 import com.mybatisflex.core.query.QueryWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -89,6 +90,9 @@ public class CheckInService {
 
     @Autowired
     private CreditBillService creditBillService;
+
+    @Autowired
+    private MemberService memberService;
 
     private LoginUser getCurrentUser() {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -200,6 +204,14 @@ public class CheckInService {
         checkIn.setCustomerPhone(booking.getCustomerPhone());
         checkIn.setCustomerType(customer.getCustomerType());
         checkIn.setMemberLevel(0);
+        checkIn.setMemberId(booking.getMemberId());
+        checkIn.setMemberNo(booking.getMemberNo());
+        if (booking.getMemberId() != null) {
+            Member member = memberService.getById(booking.getMemberId());
+            if (member != null) {
+                checkIn.setMemberLevel(member.getLevelId() != null ? member.getLevelId().intValue() : 0);
+            }
+        }
         checkIn.setRoomTypeId(booking.getRoomTypeId());
         checkIn.setRoomTypeName(booking.getRoomTypeName());
         checkIn.setRoomId(roomId);
@@ -292,7 +304,7 @@ public class CheckInService {
                                   LocalDate checkInDate, LocalDate checkOutDate,
                                   BigDecimal depositAmount, Integer depositMethod, String depositVoucherNo,
                                   Integer keyCardCount, String specialRequirements, String remark, Integer bookingSource,
-                                  Long agreementUnitId, Integer guaranteeType) {
+                                  Long agreementUnitId, Integer guaranteeType, Long memberId) {
         LoginUser user = getCurrentUser();
 
         Room room = roomMapper.selectOneById(roomId);
@@ -358,6 +370,14 @@ public class CheckInService {
         checkIn.setCustomerPhone(savedCustomer.getPhone());
         checkIn.setCustomerType(1);
         checkIn.setMemberLevel(0);
+        if (memberId != null) {
+            Member member = memberService.getById(memberId);
+            if (member != null) {
+                checkIn.setMemberId(memberId);
+                checkIn.setMemberNo(member.getMemberNo());
+                checkIn.setMemberLevel(member.getLevelId() != null ? member.getLevelId().intValue() : 0);
+            }
+        }
         checkIn.setRoomTypeId(roomTypeId);
         checkIn.setRoomTypeName(roomType.getTypeName());
         checkIn.setRoomId(roomId);
@@ -1026,6 +1046,23 @@ public class CheckInService {
         addOperationLog(checkInId, checkIn.getCheckInNo(), 9, "办理退房",
                 "退房，总费用：" + totalAmount + "元，押金退还：" + depositRefund + "元，补收：" + additionalPayment + "元",
                 user.getUserId(), user.getUsername(), "酒店管理员");
+
+        Map<String, Object> pointResult = null;
+        if (checkIn.getMemberId() != null) {
+            try {
+                pointResult = memberService.earnPointsOnCheckout(checkIn.getMemberId(), totalAmount,
+                        user.getUserId(), user.getUsername());
+                BigDecimal earnedPoints = pointResult != null ? (BigDecimal) pointResult.get("earnedPoints") : BigDecimal.ZERO;
+                checkIn.setEarnedPoints(earnedPoints);
+                checkInMapper.update(checkIn);
+            } catch (Exception e) {
+            }
+        }
+
+        record.setPointInfo(pointResult);
+        record.setMemberId(checkIn.getMemberId());
+        record.setMemberNo(checkIn.getMemberNo());
+        record.setEarnedPoints(checkIn.getEarnedPoints());
 
         return record;
     }

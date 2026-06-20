@@ -24,6 +24,14 @@ public class Booking {
 
     private String customerPhone;
 
+    private Long memberId;
+
+    private String memberNo;
+
+    private BigDecimal pointsUsed;
+
+    private BigDecimal pointsDeductionAmount;
+
     private Long roomTypeId;
 
     private String roomTypeName;

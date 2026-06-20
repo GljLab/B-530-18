@@ -159,6 +159,31 @@
                 </el-form-item>
               </el-col>
             </el-row>
+
+            <el-divider content-position="left">关联会员</el-divider>
+            <el-row :gutter="24">
+              <el-col :span="16">
+                <el-input v-model="memberSearchKeyword" placeholder="请输入会员卡号或手机号" clearable>
+                  <template #append>
+                    <el-button @click="handleSearchMember">搜索</el-button>
+                  </template>
+                </el-input>
+              </el-col>
+            </el-row>
+            <el-row v-if="memberInfo" :gutter="24" style="margin-top: 12px">
+              <el-col :span="24">
+                <el-alert type="success" :closable="false">
+                  <template #title>
+                    <div class="member-info-row">
+                      <span>卡号：{{ memberInfo.memberNo }}</span>
+                      <span>等级：{{ memberInfo.levelName }}</span>
+                      <span>可用积分：{{ memberInfo.availablePoints }}</span>
+                      <el-button type="danger" text size="small" @click="handleCancelMember">取消关联</el-button>
+                    </div>
+                  </template>
+                </el-alert>
+              </el-col>
+            </el-row>
           </el-form>
         </div>
 
@@ -435,6 +460,10 @@
                   <span class="confirm-label">证件号码：</span>
                   <span class="confirm-value">{{ step2Form.idNumber }}</span>
                 </div>
+                <div v-if="memberInfo" class="confirm-item">
+                  <span class="confirm-label">关联会员：</span>
+                  <span class="confirm-value">{{ memberInfo.memberNo }}（{{ memberInfo.levelName }}，积分：{{ memberInfo.availablePoints }}）</span>
+                </div>
               </el-card>
             </el-col>
           </el-row>
@@ -609,6 +638,9 @@ const agreementUnitList = ref([])
 const selectedAgreementUnit = ref(null)
 const creditLimitExceeded = ref(false)
 
+const memberSearchKeyword = ref('')
+const memberInfo = ref(null)
+
 const step1Rules = {
   checkinDate: [{ required: true, message: '请选择入住日期', trigger: 'change' }],
   checkoutDate: [{ required: true, message: '请选择退房日期', trigger: 'change' }],
@@ -760,6 +792,41 @@ const handleAgreementUnitChange = (val) => {
   }
 }
 
+const handleSearchMember = async () => {
+  const keyword = memberSearchKeyword.value.trim()
+  if (!keyword) {
+    ElMessage.warning('请输入会员卡号或手机号')
+    return
+  }
+  try {
+    const res = await api.member.getByMemberNo(keyword)
+    if (res.code === 200 && res.data) {
+      memberInfo.value = res.data
+    } else {
+      const pageRes = await api.member.page({ keyword, pageNum: 1, pageSize: 5 })
+      if (pageRes.code === 200) {
+        const list = pageRes.data?.records || pageRes.data?.list || pageRes.data || []
+        if (list.length > 0) {
+          memberInfo.value = list[0]
+        } else {
+          ElMessage.warning('未找到匹配的会员')
+          memberInfo.value = null
+        }
+      } else {
+        ElMessage.warning('未找到匹配的会员')
+        memberInfo.value = null
+      }
+    }
+  } catch {
+    ElMessage.error('查询会员失败')
+  }
+}
+
+const handleCancelMember = () => {
+  memberInfo.value = null
+  memberSearchKeyword.value = ''
+}
+
 const formatDiscount = (rate) => {
   if (!rate || rate >= 1) return '无折扣'
   return (rate * 10).toFixed(1).replace(/\.0$/, '') + '折'
@@ -851,7 +918,8 @@ const handleSubmit = async () => {
       keyCardCount: step4Form.keyCardCount,
       remark: step4Form.remark,
       agreementUnitId: step4Form.agreementUnitId,
-      guaranteeType: step4Form.guaranteeType
+      guaranteeType: step4Form.guaranteeType,
+      memberId: memberInfo.value?.id || null
     }
     const res = await api.checkin.walkInCheckIn(payload)
     if (res.code === 200) {
@@ -1034,5 +1102,12 @@ onMounted(() => {
   padding-top: 24px;
   border-top: 1px solid #ebeef5;
   margin-top: 24px;
+}
+
+.member-info-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 14px;
 }
 </style>

@@ -5,6 +5,7 @@ import com.example.permission.common.PageResult;
 import com.example.permission.entity.*;
 import com.example.permission.mapper.*;
 import com.example.permission.security.LoginUser;
+import com.example.permission.service.MemberService;
 import com.mybatisflex.core.paginate.Page;
 import com.mybatisflex.core.query.QueryWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -72,6 +73,9 @@ public class BookingService {
 
     @Autowired
     private RoomService roomService;
+
+    @Autowired
+    private MemberService memberService;
 
     public Map<Long, List<Room>> queryAvailableRooms(LocalDate checkInDate, LocalDate checkOutDate,
                                                       Long roomTypeId, Long floorId, String orientation,
@@ -360,6 +364,19 @@ public class BookingService {
         BigDecimal totalAmount = roomTotal.add(extraBedTotal)
                 .subtract(booking.getDiscount() != null ? booking.getDiscount() : BigDecimal.ZERO)
                 .add(booking.getOtherFee() != null ? booking.getOtherFee() : BigDecimal.ZERO);
+
+        if (booking.getPointsUsed() != null && booking.getPointsUsed().compareTo(BigDecimal.ZERO) > 0) {
+            if (booking.getMemberId() == null) {
+                throw new BusinessException("使用积分需关联会员");
+            }
+            Map<String, Object> pointsResult = memberService.usePointsWithRule(
+                    booking.getMemberId(), booking.getPointsUsed(), totalAmount,
+                    loginUser.getUserId(), loginUser.getUser().getNickname() != null ?
+                            loginUser.getUser().getNickname() : loginUser.getUsername());
+            BigDecimal deductionAmount = (BigDecimal) pointsResult.get("deductionAmount");
+            booking.setPointsDeductionAmount(deductionAmount);
+            totalAmount = totalAmount.subtract(deductionAmount);
+        }
 
         String bookingNo = generateBookingNo();
 
@@ -652,6 +669,14 @@ public class BookingService {
                 loginUser.getUser().getNickname() : loginUser.getUsername());
         booking.setUpdateTime(LocalDateTime.now());
         bookingMapper.update(booking);
+
+        if (booking.getPointsUsed() != null && booking.getPointsUsed().compareTo(BigDecimal.ZERO) > 0
+                && booking.getMemberId() != null) {
+            memberService.refundPoints(booking.getMemberId(), booking.getPointsUsed(), 8,
+                    "取消预订退还积分", "取消预订" + booking.getBookingNo() + "，退还" + booking.getPointsUsed() + "积分",
+                    loginUser.getUserId(), loginUser.getUser().getNickname() != null ?
+                            loginUser.getUser().getNickname() : loginUser.getUsername());
+        }
 
         if (booking.getRoomId() != null) {
             Room room = roomMapper.selectOneById(booking.getRoomId());

@@ -30,6 +30,12 @@ public class CheckIn {
 
     private String customerPhone;
 
+    private Long memberId;
+
+    private String memberNo;
+
+    private BigDecimal earnedPoints;
+
     private Integer customerType;
 
     private Integer memberLevel;
