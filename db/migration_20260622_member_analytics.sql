@@ -13,11 +13,12 @@ USE permission_system;
 INSERT INTO sys_role (id, role_name, role_key, order_num, status, remark) VALUES
 (13, '市场部经理', 'marketing_manager', 13, 1, '市场部经理，查看会员价值分析和行为分析，制定营销策略');
 
+-- 注意：用户ID要避免冲突，之前的迁移文件已使用到13，所以这里用15
 INSERT INTO sys_user (id, username, password, nickname, email, phone, status) VALUES
-(14, 'marketing_manager', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iKtE/ETXmB5nNiHxqHnHfgVd5GK6', '市场部经理', 'marketing@example.com', '13800138013', 1);
+(15, 'marketing_manager', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iKtE/ETXmB5nNiHxqHnHfgVd5GK6', '市场部经理', 'marketing@example.com', '13800138013', 1);
 
 INSERT INTO sys_user_role (user_id, role_id) VALUES
-(14, 13);
+(15, 13);
 
 INSERT INTO sys_data_permission (role_id, scope_type, custom_dept_ids) VALUES
 (13, 1, NULL);
@@ -25,8 +26,10 @@ INSERT INTO sys_data_permission (role_id, scope_type, custom_dept_ids) VALUES
 -- =============================================
 -- 2. 会员数据分析菜单 (ID range: 1310-1349)
 -- =============================================
+-- 注意: order_num 需要避免与其他会员管理子菜单冲突
+-- 已有: 1-会员等级, 2-会员列表, 4-会员统计, 3-积分规则, 5-积分明细, 6-积分统计, 7-权益使用, 8-升降级统计, 9-定时任务, 10-等级变更
 INSERT INTO sys_menu (id, menu_name, parent_id, order_num, path, component, perms, menu_type, visible, status, icon) VALUES
-(1310, '数据分析', 1200, 5, NULL, NULL, '', 1, 1, 1, 'DataAnalysis');
+(1310, '数据分析', 1200, 11, NULL, NULL, '', 1, 1, 1, 'DataAnalysis');
 
 INSERT INTO sys_menu (id, menu_name, parent_id, order_num, path, component, perms, menu_type, visible, status, icon) VALUES
 (1311, '会员价值分析', 1310, 1, '/member/analytics/value', 'member/MemberValueAnalysis', 'member:analytics:value', 1, 1, 1, 'Coin');

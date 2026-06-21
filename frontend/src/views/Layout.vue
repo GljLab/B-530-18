@@ -467,6 +467,38 @@
             <el-icon><Tickets /></el-icon>
             <span>等级变更记录</span>
           </el-menu-item>
+
+          <el-sub-menu index="/member/analytics" v-if="hasPermission('member:analytics:value') || hasPermission('member:analytics:level') || hasPermission('member:analytics:behavior') || hasPermission('member:analytics:churn') || hasPermission('member:analytics:benefit')">
+            <template #title>
+              <el-icon><DataAnalysis /></el-icon>
+              <span>数据分析</span>
+            </template>
+
+            <el-menu-item index="/member/analytics/value" v-if="hasPermission('member:analytics:value')">
+              <el-icon><Coin /></el-icon>
+              <span>会员价值分析</span>
+            </el-menu-item>
+
+            <el-menu-item index="/member/analytics/level" v-if="hasPermission('member:analytics:level')">
+              <el-icon><TrendCharts /></el-icon>
+              <span>等级分布分析</span>
+            </el-menu-item>
+
+            <el-menu-item index="/member/analytics/behavior" v-if="hasPermission('member:analytics:behavior')">
+              <el-icon><User /></el-icon>
+              <span>会员行为分析</span>
+            </el-menu-item>
+
+            <el-menu-item index="/member/analytics/churn" v-if="hasPermission('member:analytics:churn')">
+              <el-icon><Warning /></el-icon>
+              <span>会员流失预警</span>
+            </el-menu-item>
+
+            <el-menu-item index="/member/analytics/benefit" v-if="hasPermission('member:analytics:benefit')">
+              <el-icon><Tickets /></el-icon>
+              <span>权益使用统计</span>
+            </el-menu-item>
+          </el-sub-menu>
         </el-sub-menu>
       </el-menu>
     </el-aside>
@@ -651,7 +683,15 @@ const hasMemberPermission = computed(() => {
          hasPermission('member:point:list') ||
          hasPermission('member:statistics:list') ||
          hasPermission('member:pointStatistics:list') ||
-         hasPermission('member:benefit:log:list')
+         hasPermission('member:benefit:log:list') ||
+         hasPermission('member:levelChange:statistics') ||
+         hasPermission('member:task:list') ||
+         hasPermission('member:levelLog:list') ||
+         hasPermission('member:analytics:value') ||
+         hasPermission('member:analytics:level') ||
+         hasPermission('member:analytics:behavior') ||
+         hasPermission('member:analytics:churn') ||
+         hasPermission('member:analytics:benefit')
 })
 
 const toggleCollapse = () => {
