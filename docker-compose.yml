@@ -27,7 +27,8 @@ services:
       - ./db/migration_20260618_member_system.sql:/docker-entrypoint-initdb.d/11-migration_20260618_member_system.sql:ro
       - ./db/migration_20260619_point_system.sql:/docker-entrypoint-initdb.d/12-migration_20260619_point_system.sql:ro
       - ./db/migration_20260620_point_integration.sql:/docker-entrypoint-initdb.d/13-migration_20260620_point_integration.sql:ro
-      
+      - ./db/migration_20260620_member_benefits.sql:/docker-entrypoint-initdb.d/14-migration_20260620_member_benefits.sql:ro
+ 
     command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]

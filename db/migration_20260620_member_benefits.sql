@@ -87,45 +87,45 @@ UPDATE room SET is_preferred = 1 WHERE id IN (
 );
 
 -- =============================================
--- 6. 会员权益管理菜单 (ID range: 1240-1249)
+-- 6. 会员权益管理菜单 (ID range: 1270-1279)
 -- =============================================
 INSERT INTO sys_menu (id, menu_name, parent_id, order_num, path, component, perms, menu_type, visible, status, icon) VALUES
-(1240, '权益使用记录', 1200, 5, '/member/benefitLog', 'member/BenefitLogList', 'member:benefit:list', 1, 1, 1, 'Tickets');
+(1270, '权益使用记录', 1200, 7, '/member/benefitLog', 'member/BenefitLogList', 'member:benefit:list', 1, 1, 1, 'Tickets');
 
 -- 权益使用记录按钮权限
 INSERT INTO sys_menu (id, menu_name, parent_id, order_num, path, component, perms, menu_type, visible, status, icon) VALUES
-(1241, '权益查询', 1240, 1, '', NULL, 'member:benefit:query', 2, 1, 1, NULL),
-(1242, '权益导出', 1240, 2, '', NULL, 'member:benefit:export', 2, 1, 1, NULL);
+(1271, '权益查询', 1270, 1, '', NULL, 'member:benefit:query', 2, 1, 1, NULL),
+(1272, '权益导出', 1270, 2, '', NULL, 'member:benefit:export', 2, 1, 1, NULL);
 
 -- =============================================
 -- 7. 分配角色权限 - 超级管理员(role_id=1)
 -- =============================================
 INSERT INTO sys_role_menu (role_id, menu_id) VALUES
-(1, 1240), (1, 1241), (1, 1242);
+(1, 1270), (1, 1271), (1, 1272);
 
 -- =============================================
 -- 8. 分配角色权限 - 酒店管理员(role_id=3)
 -- =============================================
 INSERT INTO sys_role_menu (role_id, menu_id) VALUES
-(3, 1240), (3, 1241), (3, 1242);
+(3, 1270), (3, 1271), (3, 1272);
 
 -- =============================================
 -- 9. 分配角色权限 - 前厅部经理(role_id=4)
 -- =============================================
 INSERT INTO sys_role_menu (role_id, menu_id) VALUES
-(4, 1240), (4, 1241), (4, 1242);
+(4, 1270), (4, 1271), (4, 1272);
 
 -- =============================================
 -- 10. 分配角色权限 - 前台员工(role_id=6)
 -- =============================================
 INSERT INTO sys_role_menu (role_id, menu_id) VALUES
-(6, 1240), (6, 1241);
+(6, 1270), (6, 1271);
 
 -- =============================================
 -- 11. 分配角色权限 - 客服人员(role_id=8)
 -- =============================================
 INSERT INTO sys_role_menu (role_id, menu_id) VALUES
-(8, 1240), (8, 1241);
+(8, 1270), (8, 1271);
 
 -- =============================================
 -- 12. 测试权益使用记录数据
