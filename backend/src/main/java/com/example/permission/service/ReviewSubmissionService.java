@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -76,6 +77,10 @@ public class ReviewSubmissionService {
                 .where(HOTEL_INFO.DELETED.eq(0))
                 .limit(1);
         HotelInfo hotelInfo = hotelInfoMapper.selectOneByQuery(hotelQuery);
+        if (hotelInfo == null) {
+            hotelInfo = new HotelInfo();
+            hotelInfo.setHotelName("智慧酒店");
+        }
         result.put("hotelInfo", hotelInfo);
 
         result.put("invitation", invitation);
@@ -86,7 +91,7 @@ public class ReviewSubmissionService {
                 .and(REVIEW_METRIC.STATUS.eq(1))
                 .orderBy(REVIEW_METRIC.SORT_ORDER.asc(), REVIEW_METRIC.ID.asc());
         List<ReviewMetric> metrics = reviewMetricMapper.selectListByQuery(metricQuery);
-        result.put("metrics", metrics);
+        result.put("metrics", metrics != null ? metrics : new ArrayList<>());
 
         QueryWrapper tagQuery = QueryWrapper.create()
                 .from(ReviewTag.class)
@@ -94,7 +99,7 @@ public class ReviewSubmissionService {
                 .and(REVIEW_TAG.STATUS.eq(1))
                 .orderBy(REVIEW_TAG.SORT_ORDER.asc(), REVIEW_TAG.ID.asc());
         List<ReviewTag> tags = reviewTagMapper.selectListByQuery(tagQuery);
-        result.put("tags", tags);
+        result.put("tags", tags != null ? tags : new ArrayList<>());
 
         QueryWrapper quickCommentQuery = QueryWrapper.create()
                 .from(ReviewQuickComment.class)
@@ -102,7 +107,7 @@ public class ReviewSubmissionService {
                 .and(REVIEW_QUICK_COMMENT.STATUS.eq(1))
                 .orderBy(REVIEW_QUICK_COMMENT.SORT_ORDER.asc(), REVIEW_QUICK_COMMENT.ID.asc());
         List<ReviewQuickComment> quickComments = reviewQuickCommentMapper.selectListByQuery(quickCommentQuery);
-        result.put("quickComments", quickComments);
+        result.put("quickComments", quickComments != null ? quickComments : new ArrayList<>());
 
         return result;
     }

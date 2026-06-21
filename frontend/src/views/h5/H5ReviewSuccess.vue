@@ -7,7 +7,7 @@
       
       <h1 class="success-title">感谢您的宝贵评价！</h1>
       
-      <div v-if="successData.isMember && successData.earnedPoints > 0" class="points-card">
+      <div v-if="successData?.isMember && successData?.earnedPoints > 0" class="points-card">
         <div class="points-icon">
           <el-icon size="32" color="#e6a23c"><GoldMedal /></el-icon>
         </div>
@@ -18,14 +18,14 @@
         </div>
       </div>
       
-      <div class="review-summary" v-if="successData.review">
+      <div class="review-summary" v-if="successData?.review">
         <div class="summary-title">您的评价</div>
         <div class="summary-score">
           <span class="score-label">综合评分：</span>
-          <span class="score-value">{{ successData.review.overallScore }}</span>
+          <span class="score-value">{{ successData.review?.overallScore }}</span>
           <span class="score-unit">分</span>
         </div>
-        <el-rate v-model="successData.review.overallScore" disabled :max="5" class="summary-stars" />
+        <el-rate :model-value="Number(successData.review?.overallScore) || 0" disabled :max="5" class="summary-stars" />
       </div>
       
       <div class="coupon-section">

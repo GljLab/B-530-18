@@ -11,20 +11,19 @@
     <div v-else-if="pageData" class="review-page">
       <div class="hotel-header">
         <div class="hotel-logo">
-          <img v-if="pageData.hotelInfo.logo" :src="pageData.hotelInfo.logo" alt="酒店logo" />
-          <div v-else class="logo-placeholder">
+          <div class="logo-placeholder">
             <el-icon size="32"><OfficeBuilding /></el-icon>
           </div>
         </div>
-        <div class="hotel-name">{{ pageData.hotelInfo.name || '智慧酒店' }}</div>
+        <div class="hotel-name">{{ pageData.hotelInfo?.hotelName || '智慧酒店' }}</div>
       </div>
 
       <div class="stay-info-card">
-        <div class="room-type">{{ pageData.invitation.roomTypeName }}</div>
+        <div class="room-type">{{ pageData.invitation?.roomTypeName || '-' }}</div>
         <div class="stay-dates">
-          <span>{{ pageData.invitation.checkInDate }}</span>
+          <span>{{ pageData.invitation?.checkInDate || '-' }}</span>
           <span class="date-separator">至</span>
-          <span>{{ pageData.invitation.checkOutDate }}</span>
+          <span>{{ pageData.invitation?.checkOutDate || '-' }}</span>
         </div>
         <div class="stay-days">入住 {{ stayDays }} 天</div>
       </div>
@@ -182,7 +181,7 @@ const overallScore = ref(0)
 const overallScoreInt = computed(() => Math.round(overallScore.value))
 
 const stayDays = computed(() => {
-  if (!pageData.value) return 0
+  if (!pageData.value?.invitation?.checkInDate || !pageData.value?.invitation?.checkOutDate) return 0
   const start = new Date(pageData.value.invitation.checkInDate)
   const end = new Date(pageData.value.invitation.checkOutDate)
   return Math.ceil((end - start) / (1000 * 60 * 60 * 24))
@@ -315,8 +314,8 @@ const handleSubmit = async () => {
       }))
     
     const submitData = {
-      checkInNo: pageData.value.invitation.checkInNo,
-      code: pageData.value.invitation.reviewCode,
+      checkInNo: pageData.value?.invitation?.checkInNo || '',
+      code: pageData.value?.invitation?.reviewCode || '',
       metricScores: metricScoresList,
       selectedTags: selectedTags.value,
       reviewContent: reviewContent.value,
@@ -358,7 +357,8 @@ const loadPageData = async () => {
     if (res.code === 200) {
       pageData.value = res.data
       
-      for (const metric of res.data.metrics) {
+      const metrics = res.data.metrics || []
+      for (const metric of metrics) {
         metricScores[metric.id] = 0
       }
     } else {
