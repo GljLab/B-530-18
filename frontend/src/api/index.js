@@ -646,6 +646,17 @@ const api = {
     getLogPage: (params) => request.get('/member/benefit/log/page', { params }),
     getLogList: (params) => request.get('/member/benefit/log/list', { params }),
     exportBenefitLogs: (params) => request.get('/member/benefit/log/export', { params, responseType: 'blob' })
+  },
+
+  memberLevelChange: {
+    logPage: (params) => request.get('/member/levelChange/log/page', { params }),
+    statistics: () => request.get('/member/levelChange/statistics')
+  },
+
+  memberLevelTask: {
+    list: () => request.get('/member/task/list'),
+    trigger: (taskType) => request.post(`/member/task/trigger/${taskType}`),
+    logPage: (params) => request.get('/member/task/log/page', { params })
   }
 }
 

@@ -8,27 +8,29 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 @Data
-@Table("member_level_log")
-public class MemberLevelLog {
+@Table("member_level_task_log")
+public class MemberLevelTaskLog {
 
     @Id(keyType = KeyType.Auto)
     private Long id;
 
-    private Long memberId;
+    private Integer taskType;
 
-    private String memberNo;
+    private String taskName;
 
-    private Integer changeType;
+    private LocalDateTime executeTime;
 
-    private Long oldLevelId;
+    private Integer executeResult;
 
-    private String oldLevelName;
+    private Integer processCount;
 
-    private Long newLevelId;
+    private Integer upgradeCount;
 
-    private String newLevelName;
+    private Integer downgradeCount;
 
-    private String reason;
+    private Integer resetCount;
+
+    private String errorMsg;
 
     private Long operatorId;
 

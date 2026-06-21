@@ -328,7 +328,11 @@
                     <el-tag v-else-if="log.changeType === 2" type="warning">降级</el-tag>
                     <el-tag v-else type="primary">手动调整</el-tag>
                   </span>
-                  <span class="log-operator">操作人：{{ log.operatorName || '系统' }}</span>
+                  <span class="log-meta">
+                    <el-tag v-if="log.triggerType === 1" type="info" size="small" effect="plain">系统自动</el-tag>
+                    <el-tag v-else-if="log.triggerType === 2" type="warning" size="small" effect="plain">管理员</el-tag>
+                    <span class="log-operator">操作人：{{ log.operatorName || (log.triggerType === 1 ? '系统' : '-') }}</span>
+                  </span>
                 </div>
                 <div class="log-content">
                   <span v-if="log.oldLevelName">{{ log.oldLevelName }}</span>
@@ -1276,6 +1280,12 @@ onMounted(() => {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 8px;
+}
+
+.log-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .log-operator {

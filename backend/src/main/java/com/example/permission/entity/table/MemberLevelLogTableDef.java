@@ -29,11 +29,13 @@ public class MemberLevelLogTableDef extends TableDef {
 
     public final QueryColumn OPERATOR_NAME = new QueryColumn(this, "operator_name");
 
+    public final QueryColumn TRIGGER_TYPE = new QueryColumn(this, "trigger_type");
+
     public final QueryColumn CREATE_TIME = new QueryColumn(this, "create_time");
 
     public final QueryColumn ALL_COLUMNS = new QueryColumn(this, "*");
 
-    public final QueryColumn[] DEFAULT_COLUMNS = new QueryColumn[]{ID, MEMBER_ID, MEMBER_NO, CHANGE_TYPE, OLD_LEVEL_ID, OLD_LEVEL_NAME, NEW_LEVEL_ID, NEW_LEVEL_NAME, REASON, OPERATOR_ID, OPERATOR_NAME, CREATE_TIME};
+    public final QueryColumn[] DEFAULT_COLUMNS = new QueryColumn[]{ID, MEMBER_ID, MEMBER_NO, CHANGE_TYPE, OLD_LEVEL_ID, OLD_LEVEL_NAME, NEW_LEVEL_ID, NEW_LEVEL_NAME, REASON, OPERATOR_ID, OPERATOR_NAME, TRIGGER_TYPE, CREATE_TIME};
 
     public MemberLevelLogTableDef() {
         super("", "member_level_log");

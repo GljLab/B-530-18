@@ -200,6 +200,7 @@ public class MemberService {
         levelLog.setReason("会员注册");
         levelLog.setOperatorId(operatorId);
         levelLog.setOperatorName(operatorName);
+        levelLog.setTriggerType(2);
         levelLog.setCreateTime(LocalDateTime.now());
         memberLevelLogMapper.insert(levelLog);
 
@@ -412,6 +413,7 @@ public class MemberService {
         levelLog.setReason(reason);
         levelLog.setOperatorId(operatorId);
         levelLog.setOperatorName(operatorName);
+        levelLog.setTriggerType(2);
         levelLog.setCreateTime(LocalDateTime.now());
         memberLevelLogMapper.insert(levelLog);
     }
@@ -644,42 +646,56 @@ public class MemberService {
                 .orderBy(MEMBER_LEVEL.SORT_ORDER.asc());
         List<MemberLevel> higherLevels = memberLevelMapper.selectListByQuery(query);
 
+        MemberLevel targetLevel = null;
         for (MemberLevel level : higherLevels) {
             boolean canUpgrade = false;
-            if (level.getUpgradeType() == 1) {
-                if (member.getTotalSpent().compareTo(level.getUpgradeCondition()) >= 0) {
+            if (level.getUpgradeType() == null || level.getUpgradeType() == 1) {
+                BigDecimal totalSpent = member.getTotalSpent() != null ? member.getTotalSpent() : BigDecimal.ZERO;
+                BigDecimal condition = level.getUpgradeCondition() != null ? level.getUpgradeCondition() : BigDecimal.ZERO;
+                if (totalSpent.compareTo(condition) >= 0) {
                     canUpgrade = true;
                 }
             } else if (level.getUpgradeType() == 2) {
-                if (member.getTotalPoints().compareTo(level.getUpgradeCondition()) >= 0) {
+                BigDecimal totalPoints = member.getTotalPoints() != null ? member.getTotalPoints() : BigDecimal.ZERO;
+                BigDecimal condition = level.getUpgradeCondition() != null ? level.getUpgradeCondition() : BigDecimal.ZERO;
+                if (totalPoints.compareTo(condition) >= 0) {
                     canUpgrade = true;
                 }
             }
-
             if (canUpgrade) {
-                Long oldLevelId = member.getLevelId();
-                String oldLevelName = member.getLevelName();
-
-                member.setLevelId(level.getId());
-                member.setLevelName(level.getLevelName());
-                memberMapper.update(member);
-
-                MemberLevelLog levelLog = new MemberLevelLog();
-                levelLog.setMemberId(member.getId());
-                levelLog.setMemberNo(member.getMemberNo());
-                levelLog.setChangeType(1);
-                levelLog.setOldLevelId(oldLevelId);
-                levelLog.setOldLevelName(oldLevelName);
-                levelLog.setNewLevelId(level.getId());
-                levelLog.setNewLevelName(level.getLevelName());
-                levelLog.setReason("自动升级");
-                levelLog.setOperatorId(operatorId);
-                levelLog.setOperatorName(operatorName);
-                levelLog.setCreateTime(LocalDateTime.now());
-                memberLevelLogMapper.insert(levelLog);
-
-                break;
+                targetLevel = level;
             }
+        }
+
+        if (targetLevel != null) {
+            Long oldLevelId = member.getLevelId();
+            String oldLevelName = member.getLevelName();
+
+            member.setLevelId(targetLevel.getId());
+            member.setLevelName(targetLevel.getLevelName());
+            memberMapper.update(member);
+
+            String reason;
+            if (targetLevel.getUpgradeType() != null && targetLevel.getUpgradeType() == 2) {
+                reason = "累计积分达到" + targetLevel.getUpgradeCondition() + "分，自动升级";
+            } else {
+                reason = "累计消费达到" + targetLevel.getUpgradeCondition() + "元，自动升级";
+            }
+
+            MemberLevelLog levelLog = new MemberLevelLog();
+            levelLog.setMemberId(member.getId());
+            levelLog.setMemberNo(member.getMemberNo());
+            levelLog.setChangeType(1);
+            levelLog.setOldLevelId(oldLevelId);
+            levelLog.setOldLevelName(oldLevelName);
+            levelLog.setNewLevelId(targetLevel.getId());
+            levelLog.setNewLevelName(targetLevel.getLevelName());
+            levelLog.setReason(reason);
+            levelLog.setOperatorId(operatorId);
+            levelLog.setOperatorName(operatorName);
+            levelLog.setTriggerType(2);
+            levelLog.setCreateTime(LocalDateTime.now());
+            memberLevelLogMapper.insert(levelLog);
         }
     }
 

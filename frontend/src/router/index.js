@@ -513,6 +513,24 @@ const routes = [
         name: 'BenefitLogList',
         component: () => import('@/views/member/BenefitLogList.vue'),
         meta: { title: '权益使用记录', icon: 'Tickets', permission: 'member:benefit:list' }
+      },
+      {
+        path: 'member/levelChangeStatistics',
+        name: 'LevelChangeStatistics',
+        component: () => import('@/views/member/LevelChangeStatistics.vue'),
+        meta: { title: '升降级统计', icon: 'TrendCharts', permission: 'member:levelChange:statistics' }
+      },
+      {
+        path: 'member/taskManage',
+        name: 'TaskManage',
+        component: () => import('@/views/member/TaskManage.vue'),
+        meta: { title: '定时任务管理', icon: 'Timer', permission: 'member:task:list' }
+      },
+      {
+        path: 'member/levelChangeLog',
+        name: 'LevelChangeLog',
+        component: () => import('@/views/member/LevelChangeLog.vue'),
+        meta: { title: '等级变更记录', icon: 'Tickets', permission: 'member:levelLog:list' }
       }
     ]
   },
