@@ -1,5 +1,6 @@
 package com.example.permission.entity;
 
+import com.mybatisflex.annotation.Column;
 import com.mybatisflex.annotation.Id;
 import com.mybatisflex.annotation.KeyType;
 import com.mybatisflex.annotation.Table;
@@ -8,6 +9,7 @@ import lombok.Data;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @Table("review_record")
@@ -79,4 +81,10 @@ public class ReviewRecord {
     private LocalDateTime updateTime;
 
     private Integer deleted;
+
+    @Column(ignore = true)
+    private List<ReviewMetricScore> metricScores;
+
+    @Column(ignore = true)
+    private List<ReviewImage> images;
 }

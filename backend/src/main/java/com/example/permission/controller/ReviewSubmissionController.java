@@ -15,14 +15,14 @@ public class ReviewSubmissionController {
     private ReviewSubmissionService reviewSubmissionService;
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAuthority('review:submission:query')")
+    @PreAuthorize("hasAuthority('review:invitation:viewReview')")
     public Result<ReviewRecord> getById(@PathVariable Long id) {
         ReviewRecord record = reviewSubmissionService.getById(id);
         return Result.success(record);
     }
 
     @GetMapping("/byCheckIn/{checkInId}")
-    @PreAuthorize("hasAuthority('review:submission:query')")
+    @PreAuthorize("hasAuthority('review:invitation:viewReview')")
     public Result<ReviewRecord> getByCheckInId(@PathVariable Long checkInId) {
         ReviewRecord record = reviewSubmissionService.getByCheckInId(checkInId);
         return Result.success(record);

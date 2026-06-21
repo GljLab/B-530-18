@@ -22,6 +22,8 @@ import static com.example.permission.entity.table.ReviewQuickCommentTableDef.REV
 import static com.example.permission.entity.table.HotelInfoTableDef.HOTEL_INFO;
 import static com.example.permission.entity.table.ReviewInvitationTableDef.REVIEW_INVITATION;
 import static com.example.permission.entity.table.ReviewRecordTableDef.REVIEW_RECORD;
+import static com.example.permission.entity.table.ReviewMetricScoreTableDef.REVIEW_METRIC_SCORE;
+import static com.example.permission.entity.table.ReviewImageTableDef.REVIEW_IMAGE;
 
 @Service
 public class ReviewSubmissionService {
@@ -276,7 +278,8 @@ public class ReviewSubmissionService {
         }
 
         Map<String, Object> result = new HashMap<>();
-        result.put("reviewRecord", record);
+        result.put("review", record);
+        result.put("isMember", record.getMemberId() != null);
 
         if (record.getMemberId() != null) {
             PointEarnRule reviewRule = pointRuleService.getEnabledEarnRuleByType(3);
@@ -368,6 +371,7 @@ public class ReviewSubmissionService {
         if (record == null || record.getDeleted() == 1) {
             throw new BusinessException("评价记录不存在");
         }
+        fillRelationData(record);
         return record;
     }
 
@@ -379,6 +383,26 @@ public class ReviewSubmissionService {
                 .from(ReviewRecord.class)
                 .where(REVIEW_RECORD.CHECK_IN_ID.eq(checkInId))
                 .and(REVIEW_RECORD.DELETED.eq(0));
-        return reviewRecordMapper.selectOneByQuery(query);
+        ReviewRecord record = reviewRecordMapper.selectOneByQuery(query);
+        if (record != null) {
+            fillRelationData(record);
+        }
+        return record;
+    }
+
+    private void fillRelationData(ReviewRecord record) {
+        QueryWrapper metricScoreQuery = QueryWrapper.create()
+                .from(ReviewMetricScore.class)
+                .where(REVIEW_METRIC_SCORE.REVIEW_RECORD_ID.eq(record.getId()))
+                .orderBy(REVIEW_METRIC_SCORE.ID.asc());
+        List<ReviewMetricScore> metricScores = reviewMetricScoreMapper.selectListByQuery(metricScoreQuery);
+        record.setMetricScores(metricScores);
+
+        QueryWrapper imageQuery = QueryWrapper.create()
+                .from(ReviewImage.class)
+                .where(REVIEW_IMAGE.REVIEW_RECORD_ID.eq(record.getId()))
+                .orderBy(REVIEW_IMAGE.SORT_ORDER.asc(), REVIEW_IMAGE.ID.asc());
+        List<ReviewImage> images = reviewImageMapper.selectListByQuery(imageQuery);
+        record.setImages(images);
     }
 }

@@ -66,7 +66,7 @@ public class ReviewInvitationController {
     }
 
     @PutMapping("/send/{id}")
-    @PreAuthorize("hasAuthority('review:invitation:edit')")
+    @PreAuthorize("hasAuthority('review:invitation:send')")
     public Result<Void> send(@PathVariable Long id, @RequestParam Integer sendMethod) {
         if (sendMethod == null || (sendMethod != 1 && sendMethod != 2)) {
             throw new BusinessException("发送方式参数错误，1-短信, 2-邮件");
@@ -76,12 +76,10 @@ public class ReviewInvitationController {
     }
 
     @GetMapping("/link/{id}")
-    @PreAuthorize("hasAuthority('review:invitation:query')")
-    public Result<Map<String, String>> getReviewLink(@PathVariable Long id) {
+    @PreAuthorize("hasAuthority('review:invitation:copy')")
+    public Result<String> getReviewLink(@PathVariable Long id) {
         String link = reviewInvitationService.getReviewLink(id);
-        Map<String, String> result = new HashMap<>();
-        result.put("reviewLink", link);
-        return Result.success(result);
+        return Result.success(link);
     }
 
     @GetMapping("/validate")

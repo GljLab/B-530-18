@@ -253,8 +253,8 @@ const fetchList = async () => {
     }
     const res = await api.reviewInvitation.page(params)
     if (res.code === 200) {
-      tableData.value = res.data.records
-      pagination.total = res.data.total
+      tableData.value = res.data.list || []
+      pagination.total = res.data.total || 0
     }
   } catch (error) {
     console.error('获取评价邀请列表失败:', error)

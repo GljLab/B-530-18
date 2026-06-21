@@ -333,7 +333,7 @@ const handleSubmit = async () => {
       ElMessage.success('评价提交成功')
       router.push({
         path: '/h5/review/success',
-        query: { id: res.data }
+        query: { id: res.data.id }
       })
     }
   } catch (error) {
