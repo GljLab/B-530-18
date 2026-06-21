@@ -561,6 +561,18 @@ const routes = [
         name: 'LevelChangeLog',
         component: () => import('@/views/member/LevelChangeLog.vue'),
         meta: { title: '等级变更记录', icon: 'Tickets', permission: 'member:levelLog:list' }
+      },
+      {
+        path: 'review/metric',
+        name: 'ReviewMetricManage',
+        component: () => import('@/views/review/ReviewMetricManage.vue'),
+        meta: { title: '评价指标管理', icon: 'ChatDotRound', permission: 'review:metric:list' }
+      },
+      {
+        path: 'review/tag',
+        name: 'ReviewTagManage',
+        component: () => import('@/views/review/ReviewTagManage.vue'),
+        meta: { title: '评价标签与评语', icon: 'PriceTag', permission: 'review:tag:list' }
       }
     ]
   },

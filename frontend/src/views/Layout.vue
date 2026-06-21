@@ -500,6 +500,23 @@
             </el-menu-item>
           </el-sub-menu>
         </el-sub-menu>
+
+        <el-sub-menu index="/review" v-if="hasReviewPermission">
+          <template #title>
+            <el-icon><ChatDotRound /></el-icon>
+            <span>评价管理</span>
+          </template>
+
+          <el-menu-item index="/review/metric" v-if="hasPermission('review:metric:list')">
+            <el-icon><DataLine /></el-icon>
+            <span>评价指标管理</span>
+          </el-menu-item>
+
+          <el-menu-item index="/review/tag" v-if="hasPermission('review:tag:list')">
+            <el-icon><PriceTag /></el-icon>
+            <span>评价标签与评语</span>
+          </el-menu-item>
+        </el-sub-menu>
       </el-menu>
     </el-aside>
     
@@ -568,7 +585,8 @@ import {
   UserFilled, Plus, PriceTag, Warning, Checked, CopyDocument, Upload,
   Calendar, Search, EditPen, Grid, Monitor, SetUp, Share, List, Money,
   TrendCharts, Timer, Coin, Histogram, Wallet, Ticket, PieChart,
-  Stamp, Medal, DataAnalysis
+  Stamp, Medal, DataAnalysis,
+  ChatDotRound
 } from '@element-plus/icons-vue'
 
 const route = useRoute()
@@ -692,6 +710,11 @@ const hasMemberPermission = computed(() => {
          hasPermission('member:analytics:behavior') ||
          hasPermission('member:analytics:churn') ||
          hasPermission('member:analytics:benefit')
+})
+
+const hasReviewPermission = computed(() => {
+  return hasPermission('review:metric:list') ||
+         hasPermission('review:tag:list')
 })
 
 const toggleCollapse = () => {

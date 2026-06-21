@@ -684,6 +684,34 @@ const api = {
     getBenefitAnalysis: () => request.get('/member/analytics/benefit'),
     getBenefitUsageRates: () => request.get('/member/analytics/benefit/usageRates'),
     getBenefitCost: () => request.get('/member/analytics/benefit/cost')
+  },
+
+  reviewMetric: {
+    list: () => request.get('/review/metric/list'),
+    listEnabled: () => request.get('/review/metric/enabled'),
+    getById: (id) => request.get(`/review/metric/${id}`),
+    getTotalWeight: () => request.get('/review/metric/totalWeight'),
+    add: (data) => request.post('/review/metric', data),
+    update: (data) => request.put('/review/metric', data),
+    delete: (id) => request.delete(`/review/metric/${id}`),
+    updateStatus: (id, status) => request.put(`/review/metric/${id}/status`, null, { params: { status } })
+  },
+
+  reviewTag: {
+    list: (params) => request.get('/review/tag/list', { params }),
+    getById: (id) => request.get(`/review/tag/${id}`),
+    add: (data) => request.post('/review/tag', data),
+    update: (data) => request.put('/review/tag', data),
+    delete: (id) => request.delete(`/review/tag/${id}`),
+    updateSort: (ids) => request.put('/review/tag/sort', ids)
+  },
+
+  reviewQuickComment: {
+    list: (params) => request.get('/review/quickComment/list', { params }),
+    getById: (id) => request.get(`/review/quickComment/${id}`),
+    add: (data) => request.post('/review/quickComment', data),
+    update: (data) => request.put('/review/quickComment', data),
+    delete: (id) => request.delete(`/review/quickComment/${id}`)
   }
 }
 
