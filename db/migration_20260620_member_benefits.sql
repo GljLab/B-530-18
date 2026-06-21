@@ -107,12 +107,12 @@ UPDATE room SET is_smoking = 1 WHERE id IN (
 -- 6. 会员权益管理菜单 (ID range: 1270-1279)
 -- =============================================
 INSERT INTO sys_menu (id, menu_name, parent_id, order_num, path, component, perms, menu_type, visible, status, icon) VALUES
-(1270, '权益使用记录', 1200, 7, '/member/benefitLog', 'member/BenefitLogList', 'member:benefit:list', 1, 1, 1, 'Tickets');
+(1270, '权益使用记录', 1200, 7, '/member/benefitLog', 'member/BenefitLogList', 'member:benefit:log:list', 1, 1, 1, 'Tickets');
 
 -- 权益使用记录按钮权限
 INSERT INTO sys_menu (id, menu_name, parent_id, order_num, path, component, perms, menu_type, visible, status, icon) VALUES
-(1271, '权益查询', 1270, 1, '', NULL, 'member:benefit:query', 2, 1, 1, NULL),
-(1272, '权益导出', 1270, 2, '', NULL, 'member:benefit:export', 2, 1, 1, NULL);
+(1271, '权益查询', 1270, 1, '', NULL, 'member:benefit:log:query', 2, 1, 1, NULL),
+(1272, '权益导出', 1270, 2, '', NULL, 'member:benefit:log:export', 2, 1, 1, NULL);
 
 -- =============================================
 -- 7. 分配角色权限 - 超级管理员(role_id=1)

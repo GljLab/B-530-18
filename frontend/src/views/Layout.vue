@@ -447,6 +447,11 @@
             <el-icon><DataAnalysis /></el-icon>
             <span>积分统计</span>
           </el-menu-item>
+
+          <el-menu-item index="/member/benefitLog" v-if="hasPermission('member:benefit:log:list')">
+            <el-icon><Tickets /></el-icon>
+            <span>权益使用记录</span>
+          </el-menu-item>
         </el-sub-menu>
       </el-menu>
     </el-aside>
@@ -630,7 +635,8 @@ const hasMemberPermission = computed(() => {
          hasPermission('member:pointRule:list') ||
          hasPermission('member:point:list') ||
          hasPermission('member:statistics:list') ||
-         hasPermission('member:pointStatistics:list')
+         hasPermission('member:pointStatistics:list') ||
+         hasPermission('member:benefit:log:list')
 })
 
 const toggleCollapse = () => {
