@@ -76,6 +76,20 @@ public class BookingTableDef extends TableDef {
 
     public final QueryColumn CUSTOMER_PHONE = new QueryColumn(this, "customer_phone");
 
+    public final QueryColumn MEMBER_ID = new QueryColumn(this, "member_id");
+
+    public final QueryColumn MEMBER_NO = new QueryColumn(this, "member_no");
+
+    public final QueryColumn POINTS_USED = new QueryColumn(this, "points_used");
+
+    public final QueryColumn POINTS_DEDUCTION_AMOUNT = new QueryColumn(this, "points_deduction_amount");
+
+    public final QueryColumn MEMBER_DISCOUNT = new QueryColumn(this, "member_discount");
+
+    public final QueryColumn MEMBER_DISCOUNT_RATE = new QueryColumn(this, "member_discount_rate");
+
+    public final QueryColumn MEMBER_DISCOUNT_REMARK = new QueryColumn(this, "member_discount_remark");
+
     public final QueryColumn EXTRA_BED_COUNT = new QueryColumn(this, "extra_bed_count");
 
     public final QueryColumn EXTRA_BED_PRICE = new QueryColumn(this, "extra_bed_price");
@@ -102,7 +116,7 @@ public class BookingTableDef extends TableDef {
     /**
      * 默认字段，不包含逻辑删除或者 large 等字段。
      */
-    public final QueryColumn[] DEFAULT_COLUMNS = new QueryColumn[]{ID, DAYS, ROOM_ID, STATUS, DELETED, DISCOUNT, OTHER_FEE, BOOKING_NO, ROOM_PRICE, ROOM_TOTAL, CANCEL_TIME, CREATE_TIME, CUSTOMER_ID, GUEST_COUNT, GUEST_NAMES, GUEST_PHONE, PAID_AMOUNT, ROOM_NUMBER, ROOM_TYPE_ID, UPDATE_TIME, CHECK_IN_DATE, CHECK_IN_TIME, TOTAL_AMOUNT, CANCEL_DETAIL, CANCEL_REASON, CHECK_OUT_DATE, CHECK_OUT_TIME, CREATE_USER_ID, CUSTOMER_NAME, ROOM_TYPE_NAME, SOURCE_REMARK, BOOKING_SOURCE, CANCEL_PENALTY, CUSTOMER_PHONE, EXTRA_BED_COUNT, EXTRA_BED_PRICE, EXTRA_BED_TOTAL, GUARANTEE_TYPE, CREATE_USER_NAME, CANCEL_OPERATOR_ID, CANCEL_OPERATOR_NAME, EXPECTED_ARRIVAL_TIME, SPECIAL_REQUIREMENTS};
+    public final QueryColumn[] DEFAULT_COLUMNS = new QueryColumn[]{ID, DAYS, ROOM_ID, STATUS, DELETED, DISCOUNT, OTHER_FEE, BOOKING_NO, ROOM_PRICE, ROOM_TOTAL, CANCEL_TIME, CREATE_TIME, CUSTOMER_ID, GUEST_COUNT, GUEST_NAMES, GUEST_PHONE, PAID_AMOUNT, ROOM_NUMBER, ROOM_TYPE_ID, UPDATE_TIME, CHECK_IN_DATE, CHECK_IN_TIME, TOTAL_AMOUNT, CANCEL_DETAIL, CANCEL_REASON, CHECK_OUT_DATE, CHECK_OUT_TIME, CREATE_USER_ID, CUSTOMER_NAME, ROOM_TYPE_NAME, SOURCE_REMARK, BOOKING_SOURCE, CANCEL_PENALTY, CUSTOMER_PHONE, MEMBER_ID, MEMBER_NO, POINTS_USED, POINTS_DEDUCTION_AMOUNT, MEMBER_DISCOUNT, MEMBER_DISCOUNT_RATE, MEMBER_DISCOUNT_REMARK, EXTRA_BED_COUNT, EXTRA_BED_PRICE, EXTRA_BED_TOTAL, GUARANTEE_TYPE, CREATE_USER_NAME, CANCEL_OPERATOR_ID, CANCEL_OPERATOR_NAME, EXPECTED_ARRIVAL_TIME, SPECIAL_REQUIREMENTS};
 
     public BookingTableDef() {
         super("", "booking");

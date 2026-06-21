@@ -15,6 +15,9 @@ public class CheckInTableDef extends TableDef {
     public final QueryColumn CUSTOMER_NAME = new QueryColumn(this, "customer_name");
     public final QueryColumn CUSTOMER_PHONE = new QueryColumn(this, "customer_phone");
     public final QueryColumn CUSTOMER_TYPE = new QueryColumn(this, "customer_type");
+    public final QueryColumn MEMBER_ID = new QueryColumn(this, "member_id");
+    public final QueryColumn MEMBER_NO = new QueryColumn(this, "member_no");
+    public final QueryColumn EARNED_POINTS = new QueryColumn(this, "earned_points");
     public final QueryColumn MEMBER_LEVEL = new QueryColumn(this, "member_level");
     public final QueryColumn ROOM_TYPE_ID = new QueryColumn(this, "room_type_id");
     public final QueryColumn ROOM_TYPE_NAME = new QueryColumn(this, "room_type_name");
@@ -37,6 +40,15 @@ public class CheckInTableDef extends TableDef {
     public final QueryColumn PAID_AMOUNT = new QueryColumn(this, "paid_amount");
     public final QueryColumn PAYABLE_AMOUNT = new QueryColumn(this, "payable_amount");
     public final QueryColumn DEPOSIT_AMOUNT = new QueryColumn(this, "deposit_amount");
+    public final QueryColumn STANDARD_DEPOSIT = new QueryColumn(this, "standard_deposit");
+    public final QueryColumn DEPOSIT_REDUCTION_AMOUNT = new QueryColumn(this, "deposit_reduction_amount");
+    public final QueryColumn DEPOSIT_REDUCTION_RATE = new QueryColumn(this, "deposit_reduction_rate");
+    public final QueryColumn IS_UPGRADED = new QueryColumn(this, "is_upgraded");
+    public final QueryColumn ORIGINAL_ROOM_TYPE_ID = new QueryColumn(this, "original_room_type_id");
+    public final QueryColumn ORIGINAL_ROOM_TYPE_NAME = new QueryColumn(this, "original_room_type_name");
+    public final QueryColumn UPGRADE_REASON = new QueryColumn(this, "upgrade_reason");
+    public final QueryColumn IS_LATE_CHECKOUT = new QueryColumn(this, "is_late_checkout");
+    public final QueryColumn LATE_CHECKOUT_REASON = new QueryColumn(this, "late_checkout_reason");
     public final QueryColumn DEPOSIT_METHOD = new QueryColumn(this, "deposit_method");
     public final QueryColumn DEPOSIT_VOUCHER_NO = new QueryColumn(this, "deposit_voucher_no");
     public final QueryColumn DEPOSIT_AUTHORIZED_BY = new QueryColumn(this, "deposit_authorized_by");
@@ -62,7 +74,7 @@ public class CheckInTableDef extends TableDef {
     public final QueryColumn DELETED = new QueryColumn(this, "deleted");
 
     public final QueryColumn ALL_COLUMNS = new QueryColumn(this, "*");
-    public final QueryColumn[] DEFAULT_COLUMNS = new QueryColumn[]{ID, CHECK_IN_NO, BOOKING_ID, BOOKING_NO, CUSTOMER_ID, CUSTOMER_NAME, CUSTOMER_PHONE, CUSTOMER_TYPE, MEMBER_LEVEL, ROOM_TYPE_ID, ROOM_TYPE_NAME, ROOM_ID, ROOM_NUMBER, CHECK_IN_DATE, CHECK_OUT_DATE, ACTUAL_CHECK_IN_TIME, ACTUAL_CHECK_OUT_TIME, DAYS, STAYED_DAYS, ROOM_PRICE, ROOM_TOTAL, EXTRA_BED_COUNT, EXTRA_BED_PRICE, EXTRA_BED_TOTAL, OTHER_FEE, DISCOUNT, TOTAL_AMOUNT, PAID_AMOUNT, PAYABLE_AMOUNT, DEPOSIT_AMOUNT, DEPOSIT_METHOD, DEPOSIT_VOUCHER_NO, DEPOSIT_AUTHORIZED_BY, DEPOSIT_AUTHORIZED_NAME, KEY_CARD_COUNT, KEY_CARD_RETURNED, GUEST_COUNT, SPECIAL_REQUIREMENTS, BOOKING_SOURCE, STATUS, IS_OVERDUE, OPERATOR_ID, OPERATOR_NAME, CHECK_OUT_OPERATOR_ID, CHECK_OUT_OPERATOR_NAME, REMARK, AGREEMENT_UNIT_ID, AGREEMENT_UNIT_NAME, GUARANTEE_TYPE, IS_CREDIT, CREATE_TIME, UPDATE_TIME, DELETED};
+    public final QueryColumn[] DEFAULT_COLUMNS = new QueryColumn[]{ID, CHECK_IN_NO, BOOKING_ID, BOOKING_NO, CUSTOMER_ID, CUSTOMER_NAME, CUSTOMER_PHONE, CUSTOMER_TYPE, MEMBER_ID, MEMBER_NO, EARNED_POINTS, MEMBER_LEVEL, ROOM_TYPE_ID, ROOM_TYPE_NAME, ROOM_ID, ROOM_NUMBER, CHECK_IN_DATE, CHECK_OUT_DATE, ACTUAL_CHECK_IN_TIME, ACTUAL_CHECK_OUT_TIME, IS_LATE_CHECKOUT, LATE_CHECKOUT_REASON, DAYS, STAYED_DAYS, ROOM_PRICE, ROOM_TOTAL, EXTRA_BED_COUNT, EXTRA_BED_PRICE, EXTRA_BED_TOTAL, OTHER_FEE, DISCOUNT, TOTAL_AMOUNT, PAID_AMOUNT, PAYABLE_AMOUNT, DEPOSIT_AMOUNT, STANDARD_DEPOSIT, DEPOSIT_REDUCTION_AMOUNT, DEPOSIT_REDUCTION_RATE, IS_UPGRADED, ORIGINAL_ROOM_TYPE_ID, ORIGINAL_ROOM_TYPE_NAME, UPGRADE_REASON, DEPOSIT_METHOD, DEPOSIT_VOUCHER_NO, DEPOSIT_AUTHORIZED_BY, DEPOSIT_AUTHORIZED_NAME, KEY_CARD_COUNT, KEY_CARD_RETURNED, GUEST_COUNT, SPECIAL_REQUIREMENTS, BOOKING_SOURCE, STATUS, IS_OVERDUE, OPERATOR_ID, OPERATOR_NAME, CHECK_OUT_OPERATOR_ID, CHECK_OUT_OPERATOR_NAME, REMARK, AGREEMENT_UNIT_ID, AGREEMENT_UNIT_NAME, GUARANTEE_TYPE, IS_CREDIT, CREATE_TIME, UPDATE_TIME, DELETED};
 
     public CheckInTableDef() {
         super("", "check_in");

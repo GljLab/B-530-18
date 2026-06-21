@@ -77,6 +77,7 @@ docker compose logs -f
 | maintenance_staff_a | 123456 | 维修人员 | 只能查看分配给自己的维护单，可接单、更新进度、提交完成 |
 | maintenance_staff_b | 123456 | 维修人员 | 只能查看分配给自己的维护单，可接单、更新进度、提交完成 |
 | service_manager | 123456 | 客服主管 | 可查看和修改客户信息，可冻结/解冻客户，查看消费统计 |
+| marketing_manager | 123456 | 市场部经理 | 查看会员价值分析和行为分析，制定营销策略 |
 
 ## 功能模块
 

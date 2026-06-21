@@ -156,7 +156,6 @@ public class MemberAnalyticsService {
 
     private long getRepeatCustomerCount(boolean isMember) {
         QueryWrapper query = QueryWrapper.create()
-                .select("customer_id, COUNT(*) as stay_count")
                 .from(CheckIn.class)
                 .where(CHECK_IN.DELETED.eq(0))
                 .and(CHECK_IN.STATUS.eq(3));
@@ -167,11 +166,13 @@ public class MemberAnalyticsService {
             query.and(CHECK_IN.MEMBER_ID.isNull());
         }
 
-        query.groupBy("customer_id");
-        query.having("COUNT(*) >= 2");
+        List<CheckIn> checkIns = checkInMapper.selectListByQuery(query);
 
-        List<Map<String, Object>> result = checkInMapper.selectListByQueryAs(query, Map.class);
-        return result.size();
+        Map<Long, Long> customerStayCount = checkIns.stream()
+                .filter(c -> c.getCustomerId() != null)
+                .collect(Collectors.groupingBy(CheckIn::getCustomerId, Collectors.counting()));
+
+        return customerStayCount.values().stream().filter(count -> count >= 2).count();
     }
 
     public Map<String, Object> getMemberRevenueContribution() {
