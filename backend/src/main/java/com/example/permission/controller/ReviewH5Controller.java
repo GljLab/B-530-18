@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/h5/review")
+@RequestMapping("/api/h5/review")
 public class ReviewH5Controller {
 
     @Autowired

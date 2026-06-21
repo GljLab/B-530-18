@@ -78,7 +78,7 @@ public class ReviewSubmissionService {
         HotelInfo hotelInfo = hotelInfoMapper.selectOneByQuery(hotelQuery);
         result.put("hotelInfo", hotelInfo);
 
-        result.put("checkInInfo", invitation);
+        result.put("invitation", invitation);
 
         QueryWrapper metricQuery = QueryWrapper.create()
                 .from(ReviewMetric.class)
