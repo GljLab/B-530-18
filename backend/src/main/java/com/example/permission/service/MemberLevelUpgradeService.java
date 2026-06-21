@@ -129,10 +129,15 @@ public class MemberLevelUpgradeService {
     public Map<String, Object> executeYearlyReset(Long operatorId, String operatorName, boolean isManual) {
         int resetCount = 0;
 
-        UpdateWrapper updateWrapper = UpdateWrapper.create(Member.class)
-                .set(MEMBER.YEARLY_SPENT, BigDecimal.ZERO)
+        QueryWrapper query = QueryWrapper.create()
+                .from(Member.class)
                 .where(MEMBER.DELETED.eq(0));
-        resetCount = memberMapper.updateByQuery(updateWrapper);
+        List<Member> members = memberMapper.selectListByQuery(query);
+        for (Member member : members) {
+            member.setYearlySpent(BigDecimal.ZERO);
+            memberMapper.update(member);
+            resetCount++;
+        }
 
         saveTaskLog(3, isManual ? "手动触发-年度消费金额重置" : "定时任务-年度消费金额重置",
                 resetCount, 0, 0, resetCount, null, operatorId, operatorName, isManual ? 2 : 1);

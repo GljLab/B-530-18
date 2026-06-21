@@ -452,6 +452,21 @@
             <el-icon><Tickets /></el-icon>
             <span>权益使用记录</span>
           </el-menu-item>
+
+          <el-menu-item index="/member/levelChangeStatistics" v-if="hasPermission('member:levelChange:statistics')">
+            <el-icon><TrendCharts /></el-icon>
+            <span>升降级统计</span>
+          </el-menu-item>
+
+          <el-menu-item index="/member/taskManage" v-if="hasPermission('member:task:list')">
+            <el-icon><Timer /></el-icon>
+            <span>定时任务管理</span>
+          </el-menu-item>
+
+          <el-menu-item index="/member/levelChangeLog" v-if="hasPermission('member:levelLog:list')">
+            <el-icon><Tickets /></el-icon>
+            <span>等级变更记录</span>
+          </el-menu-item>
         </el-sub-menu>
       </el-menu>
     </el-aside>
