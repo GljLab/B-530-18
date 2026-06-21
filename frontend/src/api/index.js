@@ -712,6 +712,27 @@ const api = {
     add: (data) => request.post('/review/quickComment', data),
     update: (data) => request.put('/review/quickComment', data),
     delete: (id) => request.delete(`/review/quickComment/${id}`)
+  },
+
+  reviewInvitation: {
+    page: (params) => request.get('/review/invitation/page', { params }),
+    getById: (id) => request.get(`/review/invitation/${id}`),
+    getByCheckInId: (checkInId) => request.get(`/review/invitation/checkIn/${checkInId}`),
+    create: (data) => request.post('/review/invitation', data),
+    send: (id, sendMethod) => request.put(`/review/invitation/send/${id}`, null, { params: { sendMethod } }),
+    getLink: (id) => request.get(`/review/invitation/link/${id}`),
+    validate: (checkInNo, code) => request.get('/review/invitation/validate', { params: { order: checkInNo, code } })
+  },
+
+  reviewSubmission: {
+    getById: (id) => request.get(`/review/submission/${id}`),
+    getByCheckInId: (checkInId) => request.get(`/review/submission/byCheckIn/${checkInId}`)
+  },
+
+  reviewH5: {
+    getData: (order, code) => request.get('/h5/review/data', { params: { order, code } }),
+    submit: (data) => request.post('/h5/review/submit', data),
+    getSuccessData: (id) => request.get('/h5/review/success', { params: { id } })
   }
 }
 

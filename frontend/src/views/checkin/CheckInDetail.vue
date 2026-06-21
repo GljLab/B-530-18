@@ -35,6 +35,14 @@
           <el-icon><Calendar /></el-icon>
           续住
         </el-button>
+        <el-button
+          v-if="checkIn.status === 2 && hasPermission('review:invitation:add')"
+          type="primary"
+          @click="handleInviteReview"
+        >
+          <el-icon><ChatDotRound /></el-icon>
+          邀请评价
+        </el-button>
       </div>
     </div>
 
@@ -459,6 +467,38 @@
         <el-button type="primary" @click="confirmExtend" :loading="submitting">确认续住</el-button>
       </template>
     </el-dialog>
+
+    <el-dialog v-model="inviteReviewDialogVisible" title="邀请评价" width="500px">
+      <div v-if="invitationCreated">
+        <el-alert type="success" :closable="false" style="margin-bottom: 16px">
+          <template #title>评价邀请创建成功</template>
+          <div style="margin-top: 8px">
+            <div style="margin-bottom: 8px; color: #606266">评价链接：</div>
+            <div style="display: flex; align-items: center; gap: 8px">
+              <el-input :value="reviewLink" readonly style="flex: 1" />
+              <el-button type="primary" @click="handleCopyReviewLink">复制链接</el-button>
+            </div>
+            <div style="margin-top: 8px; color: #909399; font-size: 12px">
+              链接有效期：7天
+            </div>
+          </div>
+        </el-alert>
+      </div>
+      <div v-else>
+        <el-alert type="info" :closable="false">
+          <template #title>创建评价邀请</template>
+          <div style="margin-top: 8px; color: #606266">
+            点击确认后，系统将为该入住单创建评价邀请记录，客人可通过评价链接提交入住体验反馈。
+          </div>
+        </el-alert>
+      </div>
+      <template #footer>
+        <el-button @click="inviteReviewDialogVisible = false">关闭</el-button>
+        <el-button v-if="!invitationCreated" type="primary" @click="confirmCreateInvitation" :loading="creatingInvitation">
+          确认创建
+        </el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -467,9 +507,13 @@ import { ref, reactive, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import {
-  ArrowLeft, SwitchButton, Sort, Calendar
+  ArrowLeft, SwitchButton, Sort, Calendar, ChatDotRound
 } from '@element-plus/icons-vue'
 import api from '@/api'
+import { useUserStore } from '@/stores/user'
+
+const userStore = useUserStore()
+const { hasPermission } = userStore
 
 const route = useRoute()
 const router = useRouter()
@@ -522,6 +566,11 @@ const extendForm = reactive({
   extendAmount: 0,
   reason: ''
 })
+
+const inviteReviewDialogVisible = ref(false)
+const creatingInvitation = ref(false)
+const invitationCreated = ref(false)
+const reviewLink = ref('')
 
 const stayedDays = computed(() => {
   if (checkIn.value.status === 2 && checkIn.value.stayedDays) {
@@ -812,6 +861,63 @@ const confirmExtend = async () => {
     console.error('续住失败', e)
   } finally {
     submitting.value = false
+  }
+}
+
+const handleInviteReview = async () => {
+  if (checkIn.value.status !== 2) {
+    ElMessage.warning('客人未退房，无法邀请评价')
+    return
+  }
+  try {
+    const existingInvitation = await api.reviewInvitation.getByCheckInId(checkInId)
+    if (existingInvitation.code === 200 && existingInvitation.data) {
+      ElMessage.info('已创建评价邀请')
+      reviewLink.value = await api.reviewInvitation.getLink(existingInvitation.data.id)
+      if (reviewLink.value.code === 200) {
+        reviewLink.value = reviewLink.value.data
+      }
+      invitationCreated.value = true
+      inviteReviewDialogVisible.value = true
+      return
+    }
+  } catch (e) {
+    console.error('检查评价邀请失败', e)
+  }
+  invitationCreated.value = false
+  reviewLink.value = ''
+  inviteReviewDialogVisible.value = true
+}
+
+const confirmCreateInvitation = async () => {
+  creatingInvitation.value = true
+  try {
+    const res = await api.reviewInvitation.create({ checkInId: checkInId })
+    if (res.code === 200) {
+      const linkRes = await api.reviewInvitation.getLink(res.data.id)
+      if (linkRes.code === 200) {
+        reviewLink.value = linkRes.data
+      }
+      invitationCreated.value = true
+      ElMessage.success('评价邀请创建成功')
+    } else {
+      ElMessage.error(res.message || '创建失败')
+    }
+  } catch (e) {
+    console.error('创建评价邀请失败', e)
+    ElMessage.error('创建失败')
+  } finally {
+    creatingInvitation.value = false
+  }
+}
+
+const handleCopyReviewLink = async () => {
+  try {
+    await navigator.clipboard.writeText(reviewLink.value)
+    ElMessage.success('链接已复制，可用于测试')
+  } catch (e) {
+    console.error('复制失败', e)
+    ElMessage.error('复制失败')
   }
 }
 

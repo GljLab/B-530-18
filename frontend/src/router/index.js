@@ -10,6 +10,18 @@ const routes = [
     meta: { title: '登录', requiresAuth: false }
   },
   {
+    path: '/h5/review',
+    name: 'H5Review',
+    component: () => import('@/views/h5/H5Review.vue'),
+    meta: { title: '评价入住体验', requiresAuth: false }
+  },
+  {
+    path: '/h5/review/success',
+    name: 'H5ReviewSuccess',
+    component: () => import('@/views/h5/H5ReviewSuccess.vue'),
+    meta: { title: '评价成功', requiresAuth: false }
+  },
+  {
     path: '/',
     name: 'Layout',
     component: () => import('@/views/Layout.vue'),
@@ -573,6 +585,12 @@ const routes = [
         name: 'ReviewTagManage',
         component: () => import('@/views/review/ReviewTagManage.vue'),
         meta: { title: '评价标签与评语', icon: 'PriceTag', permission: 'review:tag:list' }
+      },
+      {
+        path: 'review/invitation',
+        name: 'ReviewInvitationManage',
+        component: () => import('@/views/review/ReviewInvitationManage.vue'),
+        meta: { title: '评价邀请管理', icon: 'Message', permission: 'review:invitation:list' }
       }
     ]
   },

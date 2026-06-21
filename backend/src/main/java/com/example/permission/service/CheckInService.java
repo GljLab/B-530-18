@@ -97,6 +97,9 @@ public class CheckInService {
     @Autowired
     private MemberBenefitService memberBenefitService;
 
+    @Autowired
+    private ReviewInvitationService reviewInvitationService;
+
     private LoginUser getCurrentUser() {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if (principal instanceof LoginUser) {
@@ -1108,6 +1111,12 @@ public class CheckInService {
         record.setMemberId(checkIn.getMemberId());
         record.setMemberNo(checkIn.getMemberNo());
         record.setEarnedPoints(checkIn.getEarnedPoints());
+
+        try {
+            reviewInvitationService.createInvitation(checkIn);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         return record;
     }
