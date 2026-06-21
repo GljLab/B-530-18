@@ -32,7 +32,10 @@ services:
       - ./db/migration_20260622_member_analytics.sql:/docker-entrypoint-initdb.d/16-migration_20260622_member_analytics.sql:ro
       - ./db/migration_20260622_member_analytics_test_data.sql:/docker-entrypoint-initdb.d/17-migration_20260622_member_analytics_test_data.sql:ro
       - ./db/migration_20260621_review_system.sql:/docker-entrypoint-initdb.d/18-migration_20260621_review_system.sql:ro
+      - ./db/migration_20260621_review_submission.sql:/docker-entrypoint-initdb.d/19-migration_20260621_review_submission.sql:ro
  
+
+
     command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]

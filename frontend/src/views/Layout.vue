@@ -516,6 +516,11 @@
             <el-icon><PriceTag /></el-icon>
             <span>评价标签与评语</span>
           </el-menu-item>
+
+          <el-menu-item index="/review/invitation" v-if="hasPermission('review:invitation:list')">
+            <el-icon><Message /></el-icon>
+            <span>评价邀请管理</span>
+          </el-menu-item>
         </el-sub-menu>
       </el-menu>
     </el-aside>
@@ -586,7 +591,7 @@ import {
   Calendar, Search, EditPen, Grid, Monitor, SetUp, Share, List, Money,
   TrendCharts, Timer, Coin, Histogram, Wallet, Ticket, PieChart,
   Stamp, Medal, DataAnalysis,
-  ChatDotRound
+  ChatDotRound, Message
 } from '@element-plus/icons-vue'
 
 const route = useRoute()
@@ -714,7 +719,8 @@ const hasMemberPermission = computed(() => {
 
 const hasReviewPermission = computed(() => {
   return hasPermission('review:metric:list') ||
-         hasPermission('review:tag:list')
+         hasPermission('review:tag:list') ||
+         hasPermission('review:invitation:list')
 })
 
 const toggleCollapse = () => {
