@@ -657,6 +657,33 @@ const api = {
     list: () => request.get('/member/task/list'),
     trigger: (taskType) => request.post(`/member/task/trigger/${taskType}`),
     logPage: (params) => request.get('/member/task/log/page', { params })
+  },
+
+  memberAnalytics: {
+    getValueAnalysis: () => request.get('/member/analytics/value'),
+    getVsNonMember: () => request.get('/member/analytics/value/vsNonMember'),
+    getRevenueContribution: () => request.get('/member/analytics/value/revenueContribution'),
+    getLTVAnalysis: () => request.get('/member/analytics/value/ltv'),
+
+    getLevelAnalysis: () => request.get('/member/analytics/level'),
+    getLevelComparison: () => request.get('/member/analytics/level/comparison'),
+    getLevelFlow: () => request.get('/member/analytics/level/flow'),
+    getLevelHealth: () => request.get('/member/analytics/level/health'),
+
+    getBehaviorAnalysis: () => request.get('/member/analytics/behavior'),
+    getFrequencyAnalysis: () => request.get('/member/analytics/behavior/frequency'),
+    getAmountAnalysis: () => request.get('/member/analytics/behavior/amount'),
+    getTimePreference: () => request.get('/member/analytics/behavior/timePreference'),
+
+    getChurnAnalysis: () => request.get('/member/analytics/churn'),
+    getChurnSummary: () => request.get('/member/analytics/churn/summary'),
+    getChurnList: (params) => request.get('/member/analytics/churn/list', { params }),
+    getChurnTrend: () => request.get('/member/analytics/churn/trend'),
+    getChurnByLevel: () => request.get('/member/analytics/churn/byLevel'),
+
+    getBenefitAnalysis: () => request.get('/member/analytics/benefit'),
+    getBenefitUsageRates: () => request.get('/member/analytics/benefit/usageRates'),
+    getBenefitCost: () => request.get('/member/analytics/benefit/cost')
   }
 }
 

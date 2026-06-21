@@ -491,6 +491,36 @@ const routes = [
         meta: { title: '会员统计', icon: 'DataLine', permission: 'member:statistics:list' }
       },
       {
+        path: 'member/analytics/value',
+        name: 'MemberValueAnalysis',
+        component: () => import('@/views/member/MemberValueAnalysis.vue'),
+        meta: { title: '会员价值分析', icon: 'Coin', permission: 'member:analytics:value' }
+      },
+      {
+        path: 'member/analytics/level',
+        name: 'LevelDistributionAnalysis',
+        component: () => import('@/views/member/LevelDistributionAnalysis.vue'),
+        meta: { title: '等级分布分析', icon: 'TrendCharts', permission: 'member:analytics:level' }
+      },
+      {
+        path: 'member/analytics/behavior',
+        name: 'MemberBehaviorAnalysis',
+        component: () => import('@/views/member/MemberBehaviorAnalysis.vue'),
+        meta: { title: '会员行为分析', icon: 'User', permission: 'member:analytics:behavior' }
+      },
+      {
+        path: 'member/analytics/churn',
+        name: 'MemberChurnWarning',
+        component: () => import('@/views/member/MemberChurnWarning.vue'),
+        meta: { title: '会员流失预警', icon: 'Warning', permission: 'member:analytics:churn' }
+      },
+      {
+        path: 'member/analytics/benefit',
+        name: 'BenefitUsageStatistics',
+        component: () => import('@/views/member/BenefitUsageStatistics.vue'),
+        meta: { title: '权益使用统计', icon: 'Tickets', permission: 'member:analytics:benefit' }
+      },
+      {
         path: 'member/pointRule',
         name: 'PointRuleManage',
         component: () => import('@/views/member/PointRuleManage.vue'),
