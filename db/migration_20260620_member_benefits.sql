@@ -65,24 +65,41 @@ ALTER TABLE check_in
     ADD COLUMN original_room_type_id BIGINT COMMENT '原房型ID' AFTER is_upgraded,
     ADD COLUMN original_room_type_name VARCHAR(50) COMMENT '原房型名称' AFTER original_room_type_id,
     ADD COLUMN upgrade_reason VARCHAR(200) COMMENT '升级原因' AFTER original_room_type_name,
-    ADD COLUMN actual_checkout_time DATETIME COMMENT '实际退房时间（含延迟）' AFTER actual_check_out_time,
-    ADD COLUMN is_late_checkout TINYINT DEFAULT 0 COMMENT '是否延迟退房：0-否，1-是' AFTER actual_checkout_time,
+    ADD COLUMN is_late_checkout TINYINT DEFAULT 0 COMMENT '是否延迟退房：0-否，1-是' AFTER actual_check_out_time,
     ADD COLUMN late_checkout_reason VARCHAR(200) COMMENT '延迟退房原因' AFTER is_late_checkout;
 
 -- =============================================
--- 5. 扩展房间表，增加优选标记字段
+-- 5. 扩展房间表，增加优选标记字段和禁烟字段
 -- =============================================
 ALTER TABLE room
+    ADD COLUMN is_smoking TINYINT DEFAULT 0 COMMENT '是否可吸烟：0-否，1-是' AFTER special_tags,
     ADD COLUMN is_preferred TINYINT DEFAULT 0 COMMENT '是否会员优选：0-否，1-是' AFTER is_smoking;
 
--- 更新部分房间为会员优选
+-- 更新部分房间为会员优选（基于景观、朝向、位置特征）
 UPDATE room SET is_preferred = 1 WHERE id IN (
     SELECT id FROM (
         SELECT r.id FROM room r
         WHERE r.status = 1 AND r.deleted = 0
-        AND (r.view_type IS NOT NULL OR r.floor_number >= 5 OR r.orientation IN ('南','东南','西南'))
+        AND (
+            r.view_type IS NOT NULL
+            OR r.orientation IN ('南','东南','西南')
+            OR r.location_features LIKE '%靠近电梯%'
+            OR r.location_features LIKE '%安静%'
+            OR r.location_features LIKE '%景观%'
+        )
         ORDER BY RAND()
         LIMIT 20
+    ) AS temp
+);
+
+-- 更新部分房间为可吸烟房
+UPDATE room SET is_smoking = 1 WHERE id IN (
+    SELECT id FROM (
+        SELECT r.id FROM room r
+        WHERE r.status = 1 AND r.deleted = 0
+        AND (r.special_tags LIKE '%吸烟%' OR r.special_tags LIKE '%允许宠物%')
+        ORDER BY RAND()
+        LIMIT 10
     ) AS temp
 );
 

@@ -507,6 +507,12 @@ const routes = [
         name: 'PointStatistics',
         component: () => import('@/views/member/PointStatistics.vue'),
         meta: { title: '积分统计', icon: 'DataAnalysis', permission: 'member:pointStatistics:list' }
+      },
+      {
+        path: 'member/benefitLog',
+        name: 'BenefitLogList',
+        component: () => import('@/views/member/BenefitLogList.vue'),
+        meta: { title: '权益使用记录', icon: 'Tickets', permission: 'member:benefit:list' }
       }
     ]
   },

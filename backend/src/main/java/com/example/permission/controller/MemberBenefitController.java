@@ -90,11 +90,38 @@ public class MemberBenefitController {
         return Result.success(result);
     }
 
+    @GetMapping("/late-checkout/{checkInId}")
+    @PreAuthorize("hasAuthority('member:benefit:query')")
+    public Result<Map<String, Object>> getLateCheckout(@PathVariable Long checkInId) {
+        Map<String, Object> result = memberBenefitService.getLateCheckoutByCheckIn(checkInId);
+        return Result.success(result);
+    }
+
     @GetMapping("/late-checkout-eligibility/{memberId}")
     @PreAuthorize("hasAuthority('member:benefit:query')")
     public Result<Map<String, Object>> getLateCheckoutEligibility(@PathVariable Long memberId) {
         Map<String, Object> result = memberBenefitService.getLateCheckoutEligibility(memberId);
         return Result.success(result);
+    }
+
+    @PostMapping("/checkout")
+    @PreAuthorize("hasAuthority('member:benefit:apply')")
+    public Result<Map<String, Object>> checkout(@RequestBody Map<String, Object> params) {
+        Map<String, Object> result = memberBenefitService.checkout(params, getLoginUser());
+        return Result.success(result);
+    }
+
+    @GetMapping("/log/export")
+    @PreAuthorize("hasAuthority('member:benefit:export')")
+    public void exportBenefitLogs(
+            @RequestParam(required = false) Long memberId,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) Integer benefitType,
+            @RequestParam(required = false) String relatedOrderNo,
+            @RequestParam(required = false) String startTime,
+            @RequestParam(required = false) String endTime,
+            javax.servlet.http.HttpServletResponse response) throws Exception {
+        memberBenefitService.exportBenefitLogs(memberId, keyword, keyword, benefitType, relatedOrderNo, startTime, endTime, response);
     }
 
     @PostMapping("/apply-late-checkout/{checkInId}")

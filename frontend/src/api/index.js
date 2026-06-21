@@ -635,12 +635,17 @@ const api = {
     applyDepositReduction: (checkInId, params) => request.post(`/member/benefit/apply-deposit-reduction/${checkInId}`, null, { params }),
     getUpgradeRoomTypes: (params) => request.get('/member/benefit/upgrade-room-types', { params }),
     applyRoomUpgrade: (checkInId, params) => request.post(`/member/benefit/apply-room-upgrade/${checkInId}`, null, { params }),
+    getLateCheckout: (checkInId) => request.get(`/member/benefit/late-checkout/${checkInId}`),
     getLateCheckoutEligibility: (memberId) => request.get(`/member/benefit/late-checkout-eligibility/${memberId}`),
     applyLateCheckout: (checkInId) => request.post(`/member/benefit/apply-late-checkout/${checkInId}`),
     awardPoints: (checkInId) => request.post(`/member/benefit/award-points/${checkInId}`),
+    checkout: (data) => request.post('/member/benefit/checkout', data),
     getPreferredRooms: (rooms) => request.post('/member/benefit/preferred-rooms', rooms),
+    getBenefitLogPage: (params) => request.get('/member/benefit/log/page', { params }),
+    getBenefitLogList: (params) => request.get('/member/benefit/log/list', { params }),
     getLogPage: (params) => request.get('/member/benefit/log/page', { params }),
-    getLogList: (params) => request.get('/member/benefit/log/list', { params })
+    getLogList: (params) => request.get('/member/benefit/log/list', { params }),
+    exportBenefitLogs: (params) => request.get('/member/benefit/log/export', { params, responseType: 'blob' })
   }
 }
 

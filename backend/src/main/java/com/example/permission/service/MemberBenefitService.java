@@ -54,6 +54,9 @@ public class MemberBenefitService {
     private CheckInMapper checkInMapper;
 
     @Autowired
+    private CheckInService checkInService;
+
+    @Autowired
     private MemberService memberService;
 
     @Autowired
@@ -782,6 +785,146 @@ public class MemberBenefitService {
                 .where(MEMBER_BENEFIT_LOG.MEMBER_ID.eq(memberId))
                 .orderBy(MEMBER_BENEFIT_LOG.CREATE_TIME.desc());
 
+        if (StringUtils.hasText(createTimeStart)) {
+            query.and(MEMBER_BENEFIT_LOG.CREATE_TIME.ge(LocalDateTime.parse(createTimeStart + " 00:00:00",
+                    java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))));
+        }
+        if (StringUtils.hasText(createTimeEnd)) {
+            query.and(MEMBER_BENEFIT_LOG.CREATE_TIME.le(LocalDateTime.parse(createTimeEnd + " 23:59:59",
+                    java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))));
+        }
+
+        return benefitLogMapper.selectListByQuery(query);
+    }
+
+    public Map<String, Object> getLateCheckoutByCheckIn(Long checkInId) {
+        Map<String, Object> result = new HashMap<>();
+        CheckIn checkIn = checkInMapper.selectOneById(checkInId);
+        if (checkIn == null) {
+            result.put("eligible", false);
+            result.put("standardTime", "12:00");
+            result.put("remark", "入住单不存在");
+            return result;
+        }
+
+        if (checkIn.getMemberId() == null) {
+            result.put("eligible", false);
+            result.put("standardTime", "12:00");
+            result.put("remark", "非会员退房时间为12:00，超时需收取费用");
+            return result;
+        }
+
+        return getLateCheckoutEligibility(checkIn.getMemberId());
+    }
+
+    public Map<String, Object> checkout(Map<String, Object> params, LoginUser loginUser) {
+        Long checkInId = Long.valueOf(params.get("checkInId").toString());
+        Map<String, Object> result = new HashMap<>();
+
+        try {
+            Integer paymentMethod = params.get("paymentMethod") != null ? Integer.valueOf(params.get("paymentMethod").toString()) : null;
+            String paymentVoucherNo = params.get("paymentVoucherNo") != null ? params.get("paymentVoucherNo").toString() : null;
+            Integer depositMethod = params.get("depositMethod") != null ? Integer.valueOf(params.get("depositMethod").toString()) : null;
+            Integer keyCardReturned = params.get("keyCardReturned") != null ? Integer.valueOf(params.get("keyCardReturned").toString()) : null;
+            Integer keyCardLost = params.get("keyCardLost") != null ? Integer.valueOf(params.get("keyCardLost").toString()) : null;
+            Integer roomChecked = params.get("roomChecked") != null ? Integer.valueOf(params.get("roomChecked").toString()) : null;
+            Integer roomCheckResult = params.get("roomCheckResult") != null ? Integer.valueOf(params.get("roomCheckResult").toString()) : null;
+            String damageItems = params.get("damageItems") != null ? params.get("damageItems").toString() : null;
+            String damageDescription = params.get("damageDescription") != null ? params.get("damageDescription").toString() : null;
+            BigDecimal damageCompensation = params.get("damageCompensation") != null ? new BigDecimal(params.get("damageCompensation").toString()) : BigDecimal.ZERO;
+            String remark = params.get("remark") != null ? params.get("remark").toString() : null;
+
+            CheckIn checkIn = checkInMapper.selectOneById(checkInId);
+            if (checkIn != null && checkIn.getMemberId() != null) {
+                try {
+                    applyLateCheckout(checkInId, loginUser);
+                    result.put("lateCheckoutApplied", true);
+                } catch (Exception e) {
+                    result.put("lateCheckoutApplied", false);
+                }
+            }
+
+            Object checkoutRecord = checkInService.checkOut(checkInId, paymentMethod, paymentVoucherNo,
+                    depositMethod, keyCardReturned, keyCardLost, roomChecked, roomCheckResult,
+                    damageItems, damageDescription, damageCompensation, remark);
+
+            checkIn = checkInMapper.selectOneById(checkInId);
+            if (checkIn != null && checkIn.getMemberId() != null) {
+                try {
+                    Map<String, Object> pointsResult = awardPointsForCheckIn(checkInId, loginUser);
+                    result.put("pointsAwarded", true);
+                    result.put("pointsInfo", pointsResult);
+                } catch (Exception e) {
+                    result.put("pointsAwarded", false);
+                    result.put("pointsError", e.getMessage());
+                }
+            }
+
+            result.put("success", true);
+            result.put("message", "退房成功");
+            result.put("data", checkoutRecord);
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("message", "退房失败：" + e.getMessage());
+        }
+
+        return result;
+    }
+
+    public void exportBenefitLogs(Long memberId, String memberNo, String memberName, Integer benefitType,
+                                  String relatedOrderNo, String startTime, String endTime,
+                                  javax.servlet.http.HttpServletResponse response) throws Exception {
+        List<MemberBenefitLog> logs = getBenefitLogListForExport(memberId, memberNo, memberName, benefitType, relatedOrderNo, startTime, endTime);
+
+        response.setContentType("application/vnd.ms-excel;charset=UTF-8");
+        response.setHeader("Content-Disposition", "attachment;filename=" +
+                java.net.URLEncoder.encode("权益使用记录.xlsx", "UTF-8"));
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("使用时间\t会员卡号\t会员姓名\t权益类型\t关联单号\t权益内容\t原始金额\t优惠金额\t实际金额\t操作人\t备注\n");
+
+        for (MemberBenefitLog log : logs) {
+            sb.append(log.getCreateTime() != null ? log.getCreateTime().format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) : "").append("\t");
+            sb.append(log.getMemberNo() != null ? log.getMemberNo() : "").append("\t");
+            sb.append(log.getMemberName() != null ? log.getMemberName() : "").append("\t");
+            sb.append(log.getBenefitTypeName() != null ? log.getBenefitTypeName() : "").append("\t");
+            sb.append(log.getRelatedOrderNo() != null ? log.getRelatedOrderNo() : "").append("\t");
+            sb.append(log.getBenefitContent() != null ? log.getBenefitContent().replace("\t", " ") : "").append("\t");
+            sb.append(log.getOriginalAmount() != null ? log.getOriginalAmount() : "").append("\t");
+            sb.append(log.getBenefitAmount() != null ? log.getBenefitAmount() : "").append("\t");
+            sb.append(log.getActualAmount() != null ? log.getActualAmount() : "").append("\t");
+            sb.append(log.getOperatorName() != null ? log.getOperatorName() : "").append("\t");
+            sb.append(log.getRemark() != null ? log.getRemark().replace("\t", " ") : "").append("\n");
+        }
+
+        try (java.io.OutputStream os = response.getOutputStream()) {
+            os.write(sb.toString().getBytes("UTF-8"));
+            os.flush();
+        }
+    }
+
+    private List<MemberBenefitLog> getBenefitLogListForExport(Long memberId, String memberNo, String memberName,
+                                                               Integer benefitType, String relatedOrderNo,
+                                                               String createTimeStart, String createTimeEnd) {
+        QueryWrapper query = QueryWrapper.create()
+                .from(MemberBenefitLog.class)
+                .orderBy(MEMBER_BENEFIT_LOG.CREATE_TIME.desc());
+
+        if (memberId != null) {
+            query.and(MEMBER_BENEFIT_LOG.MEMBER_ID.eq(memberId));
+        }
+        if (StringUtils.hasText(memberNo)) {
+            query.and(MEMBER_BENEFIT_LOG.MEMBER_NO.like(memberNo));
+        }
+        if (StringUtils.hasText(memberName)) {
+            query.and(MEMBER_BENEFIT_LOG.MEMBER_NAME.like(memberName));
+        }
+        if (benefitType != null) {
+            query.and(MEMBER_BENEFIT_LOG.BENEFIT_TYPE.eq(benefitType));
+        }
+        if (StringUtils.hasText(relatedOrderNo)) {
+            query.and(MEMBER_BENEFIT_LOG.RELATED_ORDER_NO.like(relatedOrderNo));
+        }
         if (StringUtils.hasText(createTimeStart)) {
             query.and(MEMBER_BENEFIT_LOG.CREATE_TIME.ge(LocalDateTime.parse(createTimeStart + " 00:00:00",
                     java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))));
