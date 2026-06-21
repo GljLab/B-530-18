@@ -148,16 +148,15 @@ LIMIT 20;
 -- 5. 生成权益使用记录
 -- =============================================
 -- 折扣优惠权益
-INSERT INTO member_benefit_log (member_id, member_no, benefit_type, benefit_name, use_count, benefit_amount, related_order_type, related_order_id, create_time)
+INSERT INTO member_benefit_log (member_id, member_no, benefit_type, benefit_type_name, related_order_type, related_order_id, benefit_amount, create_time)
 SELECT 
   m.id,
   m.member_no,
   1,
-  '折扣优惠',
-  1,
-  FLOOR(RAND() * 200) + 20,
+  '房费折扣',
   1,
   FLOOR(RAND() * 100) + 1,
+  FLOOR(RAND() * 200) + 20,
   DATE_SUB(NOW(), INTERVAL FLOOR(RAND() * 180) DAY)
 FROM member m
 WHERE m.level_id > 1 AND m.deleted = 0
@@ -165,16 +164,15 @@ ORDER BY RAND()
 LIMIT 50;
 
 -- 免费升级权益
-INSERT INTO member_benefit_log (member_id, member_no, benefit_type, benefit_name, use_count, benefit_amount, related_order_type, related_order_id, create_time)
+INSERT INTO member_benefit_log (member_id, member_no, benefit_type, benefit_type_name, related_order_type, related_order_id, benefit_amount, create_time)
 SELECT 
   m.id,
   m.member_no,
   2,
-  '免费升级',
-  1,
-  FLOOR(RAND() * 300) + 100,
+  '免费升级房型',
   1,
   FLOOR(RAND() * 100) + 1,
+  FLOOR(RAND() * 300) + 100,
   DATE_SUB(NOW(), INTERVAL FLOOR(RAND() * 180) DAY)
 FROM member m
 WHERE m.level_id >= 3 AND m.deleted = 0
@@ -182,16 +180,15 @@ ORDER BY RAND()
 LIMIT 30;
 
 -- 延迟退房权益
-INSERT INTO member_benefit_log (member_id, member_no, benefit_type, benefit_name, use_count, benefit_amount, related_order_type, related_order_id, create_time)
+INSERT INTO member_benefit_log (member_id, member_no, benefit_type, benefit_type_name, related_order_type, related_order_id, benefit_amount, create_time)
 SELECT 
   m.id,
   m.member_no,
-  3,
+  4,
   '延迟退房',
   1,
-  0,
-  1,
   FLOOR(RAND() * 100) + 1,
+  0,
   DATE_SUB(NOW(), INTERVAL FLOOR(RAND() * 180) DAY)
 FROM member m
 WHERE m.level_id >= 2 AND m.deleted = 0
@@ -199,16 +196,15 @@ ORDER BY RAND()
 LIMIT 40;
 
 -- 押金减免权益
-INSERT INTO member_benefit_log (member_id, member_no, benefit_type, benefit_name, use_count, benefit_amount, related_order_type, related_order_id, create_time)
+INSERT INTO member_benefit_log (member_id, member_no, benefit_type, benefit_type_name, related_order_type, related_order_id, benefit_amount, create_time)
 SELECT 
   m.id,
   m.member_no,
-  4,
+  3,
   '押金减免',
   1,
-  FLOOR(RAND() * 500) + 100,
-  1,
   FLOOR(RAND() * 100) + 1,
+  FLOOR(RAND() * 500) + 100,
   DATE_SUB(NOW(), INTERVAL FLOOR(RAND() * 180) DAY)
 FROM member m
 WHERE m.level_id >= 2 AND m.deleted = 0
@@ -216,16 +212,15 @@ ORDER BY RAND()
 LIMIT 35;
 
 -- 积分加倍权益
-INSERT INTO member_benefit_log (member_id, member_no, benefit_type, benefit_name, use_count, benefit_amount, related_order_type, related_order_id, create_time)
+INSERT INTO member_benefit_log (member_id, member_no, benefit_type, benefit_type_name, related_order_type, related_order_id, benefit_amount, create_time)
 SELECT 
   m.id,
   m.member_no,
   5,
-  '积分加倍',
-  1,
-  FLOOR(RAND() * 100) + 10,
+  '积分发放',
   1,
   FLOOR(RAND() * 100) + 1,
+  FLOOR(RAND() * 100) + 10,
   DATE_SUB(NOW(), INTERVAL FLOOR(RAND() * 180) DAY)
 FROM member m
 WHERE m.level_id > 1 AND m.deleted = 0
