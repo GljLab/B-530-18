@@ -613,8 +613,7 @@ import {
   Calendar, Search, EditPen, Grid, Monitor, SetUp, Share, List, Money,
   TrendCharts, Timer, Coin, Histogram, Wallet, Ticket, PieChart,
   Stamp, Medal, DataAnalysis,
-  ChatDotRound, Message, CircleCheck,
-  Warning
+  ChatDotRound, Message, CircleCheck
 } from '@element-plus/icons-vue'
 
 const route = useRoute()

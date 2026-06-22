@@ -118,7 +118,7 @@ public class ComplaintService {
             loadComplaintRelations(complaint);
         }
 
-        return new PageResult<>(page.getTotalPage(), page.getPageNumber(), page.getPageSize(), page.getTotalRow(), page.getRecords());
+        return new PageResult<>(page.getTotalRow(), page.getRecords(), page.getPageNumber(), page.getPageSize());
     }
 
     private void loadComplaintRelations(Complaint complaint) {
@@ -181,7 +181,7 @@ public class ComplaintService {
 
         complaint.setComplaintStatus(2);
         complaint.setAcceptUserId(currentUser.getUserId());
-        complaint.setAcceptUserName(currentUser.getNickname() != null ? currentUser.getNickname() : currentUser.getUsername());
+        complaint.setAcceptUserName(currentUser.getUser().getNickname() != null ? currentUser.getUser().getNickname() : currentUser.getUsername());
         complaint.setAcceptTime(LocalDateTime.now());
         complaint.setAcceptRemark(acceptRemark);
         complaint.setAssignUserId(assignUserId);
@@ -213,7 +213,7 @@ public class ComplaintService {
         complaint.setRejectReason(rejectReason);
         complaint.setRejectRemark(rejectRemark);
         complaint.setRejectUserId(currentUser.getUserId());
-        complaint.setRejectUserName(currentUser.getNickname() != null ? currentUser.getNickname() : currentUser.getUsername());
+        complaint.setRejectUserName(currentUser.getUser().getNickname() != null ? currentUser.getUser().getNickname() : currentUser.getUsername());
         complaint.setRejectTime(LocalDateTime.now());
         complaintMapper.update(complaint);
     }
@@ -254,7 +254,7 @@ public class ComplaintService {
         complaint.setCompensationPlan(compensationPlan);
         complaint.setHandleRemark(handleRemark);
         complaint.setHandleUserId(currentUser.getUserId());
-        complaint.setHandleUserName(currentUser.getNickname() != null ? currentUser.getNickname() : currentUser.getUsername());
+        complaint.setHandleUserName(currentUser.getUser().getNickname() != null ? currentUser.getUser().getNickname() : currentUser.getUsername());
         complaint.setHandleTime(LocalDateTime.now());
         complaint.setNeedReprocess(0);
         complaintMapper.update(complaint);
@@ -294,7 +294,7 @@ public class ComplaintService {
         visit.setSatisfaction(satisfaction);
         visit.setVisitRemark(visitRemark);
         visit.setVisitUserId(currentUser.getUserId());
-        visit.setVisitUserName(currentUser.getNickname() != null ? currentUser.getNickname() : currentUser.getUsername());
+        visit.setVisitUserName(currentUser.getUser().getNickname() != null ? currentUser.getUser().getNickname() : currentUser.getUsername());
         visit.setNeedReprocess(needReprocess != null ? needReprocess : 0);
         visit.setDeleted(0);
         complaintVisitMapper.insert(visit);
