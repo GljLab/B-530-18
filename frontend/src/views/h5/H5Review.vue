@@ -110,7 +110,7 @@
             :key="index"
             class="image-item"
           >
-            <img :src="image.url" alt="评价图片" />
+            <img :src="image.imageUrl" :alt="image.imageName || '评价图片'" />
             <div class="image-remove" @click="removeImage(index)">
               <el-icon><Close /></el-icon>
             </div>
@@ -250,11 +250,11 @@ const handleFileChange = async (event) => {
       const formData = new FormData()
       formData.append('file', file)
       
-      const res = await api.hotel.uploadFile(formData)
+      const res = await api.reviewH5.uploadImage(formData)
       if (res.code === 200) {
         uploadedImages.value.push({
-          url: res.data,
-          name: file.name
+          imageUrl: res.data.url,
+          imageName: file.name
         })
       }
     } catch (error) {
@@ -320,8 +320,8 @@ const handleSubmit = async () => {
       selectedTags: selectedTags.value,
       reviewContent: reviewContent.value,
       images: uploadedImages.value.map((img, index) => ({
-        imageUrl: img.url,
-        imageName: img.name,
+        imageUrl: img.imageUrl,
+        imageName: img.imageName,
         sortOrder: index
       })),
       isAnonymous: isAnonymous.value ? 1 : 0

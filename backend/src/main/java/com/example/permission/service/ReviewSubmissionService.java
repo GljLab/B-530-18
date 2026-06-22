@@ -67,6 +67,48 @@ public class ReviewSubmissionService {
         throw new BusinessException("用户未登录");
     }
 
+    private String safeToString(Object obj) {
+        if (obj == null) {
+            return null;
+        }
+        if (obj instanceof String) {
+            return (String) obj;
+        }
+        return obj.toString();
+    }
+
+    private Integer safeToInteger(Object obj) {
+        if (obj == null) {
+            return null;
+        }
+        if (obj instanceof Integer) {
+            return (Integer) obj;
+        }
+        if (obj instanceof Number) {
+            return ((Number) obj).intValue();
+        }
+        if (obj instanceof String) {
+            return Integer.parseInt((String) obj);
+        }
+        return Integer.parseInt(obj.toString());
+    }
+
+    private Long safeToLong(Object obj) {
+        if (obj == null) {
+            return null;
+        }
+        if (obj instanceof Long) {
+            return (Long) obj;
+        }
+        if (obj instanceof Number) {
+            return ((Number) obj).longValue();
+        }
+        if (obj instanceof String) {
+            return Long.parseLong((String) obj);
+        }
+        return Long.parseLong(obj.toString());
+    }
+
     public Map<String, Object> getReviewPageData(String checkInNo, String code) {
         ReviewInvitation invitation = validateLink(checkInNo, code);
 
@@ -114,8 +156,8 @@ public class ReviewSubmissionService {
 
     @Transactional
     public Long submitReview(Map<String, Object> reviewData) {
-        String checkInNo = (String) reviewData.get("checkInNo");
-        String code = (String) reviewData.get("code");
+        String checkInNo = safeToString(reviewData.get("checkInNo"));
+        String code = safeToString(reviewData.get("code"));
 
         ReviewInvitation invitation = validateLink(checkInNo, code);
 
@@ -135,7 +177,7 @@ public class ReviewSubmissionService {
             if (metric.getIsRequired() != null && metric.getIsRequired() == 1) {
                 boolean found = false;
                 for (Map<String, Object> scoreMap : metricScores) {
-                    Long metricId = Long.valueOf(scoreMap.get("metricId").toString());
+                    Long metricId = safeToLong(scoreMap.get("metricId"));
                     if (metricId.equals(metric.getId())) {
                         found = true;
                         Object scoreObj = scoreMap.get("score");
@@ -151,7 +193,7 @@ public class ReviewSubmissionService {
             }
         }
 
-        String reviewContent = (String) reviewData.get("reviewContent");
+        String reviewContent = safeToString(reviewData.get("reviewContent"));
         if (reviewContent != null && reviewContent.length() > 500) {
             throw new BusinessException("评价内容不能超过500字");
         }
@@ -181,12 +223,16 @@ public class ReviewSubmissionService {
         record.setOverallScore(overallScore);
         record.setReviewContent(reviewContent != null ? reviewContent.trim() : null);
 
-        List<String> selectedTags = (List<String>) reviewData.get("selectedTags");
-        if (selectedTags != null && !selectedTags.isEmpty()) {
+        List<?> selectedTagsRaw = (List<?>) reviewData.get("selectedTags");
+        if (selectedTagsRaw != null && !selectedTagsRaw.isEmpty()) {
+            List<String> selectedTags = new ArrayList<>();
+            for (Object tag : selectedTagsRaw) {
+                selectedTags.add(safeToString(tag));
+            }
             record.setSelectedTags(String.join(",", selectedTags));
         }
 
-        Integer isAnonymous = (Integer) reviewData.get("isAnonymous");
+        Integer isAnonymous = safeToInteger(reviewData.get("isAnonymous"));
         record.setIsAnonymous(isAnonymous != null ? isAnonymous : 0);
         record.setReviewStatus(0);
         record.setIsTop(0);
@@ -199,8 +245,8 @@ public class ReviewSubmissionService {
         reviewRecordMapper.insert(record);
 
         for (Map<String, Object> scoreMap : metricScores) {
-            Long metricId = Long.valueOf(scoreMap.get("metricId").toString());
-            Integer score = Integer.valueOf(scoreMap.get("score").toString());
+            Long metricId = safeToLong(scoreMap.get("metricId"));
+            Integer score = safeToInteger(scoreMap.get("score"));
 
             ReviewMetric metric = null;
             for (ReviewMetric m : metrics) {
@@ -228,9 +274,10 @@ public class ReviewSubmissionService {
             for (Map<String, Object> imageMap : images) {
                 ReviewImage image = new ReviewImage();
                 image.setReviewRecordId(record.getId());
-                image.setImageUrl((String) imageMap.get("imageUrl"));
-                image.setImageName((String) imageMap.get("imageName"));
-                image.setSortOrder(sortOrder++);
+                image.setImageUrl(safeToString(imageMap.get("imageUrl")));
+                image.setImageName(safeToString(imageMap.get("imageName")));
+                Integer imgSortOrder = safeToInteger(imageMap.get("sortOrder"));
+                image.setSortOrder(imgSortOrder != null ? imgSortOrder : sortOrder++);
                 image.setCreateTime(LocalDateTime.now());
                 reviewImageMapper.insert(image);
             }
@@ -351,9 +398,9 @@ public class ReviewSubmissionService {
             totalWeight += metric.getWeight() != null ? metric.getWeight() : 0;
 
             for (Map<String, Object> scoreMap : metricScores) {
-                Long metricId = Long.valueOf(scoreMap.get("metricId").toString());
+                Long metricId = safeToLong(scoreMap.get("metricId"));
                 if (metricId.equals(metric.getId())) {
-                    Integer score = Integer.valueOf(scoreMap.get("score").toString());
+                    Integer score = safeToInteger(scoreMap.get("score"));
                     int weight = metric.getWeight() != null ? metric.getWeight() : 0;
                     weightedSum = weightedSum.add(BigDecimal.valueOf(score * weight));
                     break;

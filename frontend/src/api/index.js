@@ -732,7 +732,8 @@ const api = {
   reviewH5: {
     getData: (order, code) => request.get('/h5/review/data', { params: { order, code } }),
     submit: (data) => request.post('/h5/review/submit', data),
-    getSuccessData: (id) => request.get('/h5/review/success', { params: { id } })
+    getSuccessData: (id) => request.get('/h5/review/success', { params: { id } }),
+    uploadImage: (formData) => request.post('/file/h5-upload', formData, { headers: { 'Content-Type': 'multipart/form-data' } })
   }
 }
 

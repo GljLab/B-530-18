@@ -40,6 +40,15 @@ public class FileUploadController {
     @PostMapping("/upload")
     @PreAuthorize("isAuthenticated()")
     public Result<Map<String, String>> upload(@RequestParam("file") MultipartFile file) {
+        return doUpload(file);
+    }
+
+    @PostMapping("/h5-upload")
+    public Result<Map<String, String>> h5Upload(@RequestParam("file") MultipartFile file) {
+        return doUpload(file);
+    }
+
+    private Result<Map<String, String>> doUpload(MultipartFile file) {
         if (file.isEmpty()) {
             return Result.error("上传文件不能为空");
         }
