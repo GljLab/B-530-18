@@ -588,7 +588,7 @@ const loadTableData = async () => {
     }
     const res = await api.complaint.getPage(params)
     if (res.code === 200) {
-      tableData.value = res.data.records || []
+      tableData.value = res.data.list || []
       pagination.total = res.data.total || 0
     } else {
       ElMessage.error(res.message || '获取投诉列表失败')
