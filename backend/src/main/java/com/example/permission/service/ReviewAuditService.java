@@ -287,36 +287,29 @@ public class ReviewAuditService {
             query.and(REVIEW_RECORD.ROOM_TYPE_ID.eq(roomTypeId));
         }
 
+        if (Boolean.TRUE.equals(hasImage)) {
+            query.and("id IN (SELECT review_record_id FROM review_image)");
+        }
+
+        if ("score_desc".equals(sortType)) {
+            query.orderBy(REVIEW_RECORD.OVERALL_SCORE.desc(), REVIEW_RECORD.REVIEW_TIME.desc());
+        } else if ("score_asc".equals(sortType)) {
+            query.orderBy(REVIEW_RECORD.OVERALL_SCORE.asc(), REVIEW_RECORD.REVIEW_TIME.desc());
+        } else {
+            query.orderBy(REVIEW_RECORD.REVIEW_TIME.desc(), REVIEW_RECORD.ID.desc());
+        }
+
         Page<ReviewRecord> page = reviewRecordMapper.paginate(
                 Page.of(pageNum != null ? pageNum : 1, pageSize != null ? pageSize : 10),
                 query
         );
 
         List<ReviewRecord> list = page.getRecords();
-        List<ReviewRecord> filteredList = new ArrayList<>();
         for (ReviewRecord record : list) {
             fillFullRelationData(record);
-
-            if (Boolean.TRUE.equals(hasImage)) {
-                if (record.getImages() != null && !record.getImages().isEmpty()) {
-                    filteredList.add(record);
-                }
-            } else {
-                filteredList.add(record);
-            }
         }
 
-        if (Boolean.TRUE.equals(hasImage)) {
-            sortList(filteredList, sortType);
-            long totalFiltered = filteredList.size();
-            int from = (int) ((pageNum - 1) * pageSize);
-            int to = Math.min(from + pageSize.intValue(), filteredList.size());
-            List<ReviewRecord> pagedList = from < filteredList.size() ? filteredList.subList(from, to) : new ArrayList<>();
-            return new PageResult<>(totalFiltered, pagedList, pageNum, pageSize);
-        }
-
-        sortList(filteredList, sortType);
-        return new PageResult<>(page.getTotalRow(), filteredList, page.getPageNumber(), page.getPageSize());
+        return new PageResult<>(page.getTotalRow(), list, page.getPageNumber(), page.getPageSize());
     }
 
     public List<RoomType> getRoomTypeList() {
