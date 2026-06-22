@@ -35,6 +35,7 @@ services:
       - ./db/migration_20260621_review_submission.sql:/docker-entrypoint-initdb.d/19-migration_20260621_review_submission.sql:ro
 
       - ./db/migration_20260622_review_audit_display.sql:/docker-entrypoint-initdb.d/20-migration_20260622_review_audit_display.sql:ro
+      - ./db/migration_20260622_complaint_system.sql:/docker-entrypoint-initdb.d/21-migration_20260622_complaint_system.sql:ro
  
 
 

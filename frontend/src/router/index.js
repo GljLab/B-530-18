@@ -22,6 +22,18 @@ const routes = [
     meta: { title: '评价成功', requiresAuth: false }
   },
   {
+    path: '/h5/complaint',
+    name: 'H5Complaint',
+    component: () => import('@/views/h5/H5Complaint.vue'),
+    meta: { title: '客户投诉', requiresAuth: false }
+  },
+  {
+    path: '/h5/complaint/success',
+    name: 'H5ComplaintSuccess',
+    component: () => import('@/views/h5/H5ComplaintSuccess.vue'),
+    meta: { title: '投诉提交成功', requiresAuth: false }
+  },
+  {
     path: '/',
     name: 'Layout',
     component: () => import('@/views/Layout.vue'),
@@ -603,6 +615,12 @@ const routes = [
         name: 'ReviewDisplay',
         component: () => import('@/views/review/ReviewDisplay.vue'),
         meta: { title: '客户评价展示', icon: 'ChatDotRound', permission: 'review:display:view' }
+      },
+      {
+        path: 'complaint/list',
+        name: 'ComplaintManage',
+        component: () => import('@/views/complaint/ComplaintManage.vue'),
+        meta: { title: '投诉处理', icon: 'Warning', permission: 'complaint:list' }
       }
     ]
   },

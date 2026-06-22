@@ -532,6 +532,18 @@
             <span>客户评价展示</span>
           </el-menu-item>
         </el-sub-menu>
+
+        <el-sub-menu index="/complaint" v-if="hasComplaintPermission">
+          <template #title>
+            <el-icon><Warning /></el-icon>
+            <span>投诉管理</span>
+          </template>
+
+          <el-menu-item index="/complaint/list" v-if="hasPermission('complaint:list')">
+            <el-icon><Document /></el-icon>
+            <span>投诉处理</span>
+          </el-menu-item>
+        </el-sub-menu>
       </el-menu>
     </el-aside>
     
@@ -601,7 +613,8 @@ import {
   Calendar, Search, EditPen, Grid, Monitor, SetUp, Share, List, Money,
   TrendCharts, Timer, Coin, Histogram, Wallet, Ticket, PieChart,
   Stamp, Medal, DataAnalysis,
-  ChatDotRound, Message, CircleCheck
+  ChatDotRound, Message, CircleCheck,
+  Warning
 } from '@element-plus/icons-vue'
 
 const route = useRoute()
@@ -733,6 +746,16 @@ const hasReviewPermission = computed(() => {
          hasPermission('review:invitation:list') ||
          hasPermission('review:audit:list') ||
          hasPermission('review:display:view')
+})
+
+const hasComplaintPermission = computed(() => {
+  return hasPermission('complaint:list') ||
+         hasPermission('complaint:query') ||
+         hasPermission('complaint:accept') ||
+         hasPermission('complaint:reject') ||
+         hasPermission('complaint:handle') ||
+         hasPermission('complaint:visit') ||
+         hasPermission('complaint:myTask')
 })
 
 const toggleCollapse = () => {

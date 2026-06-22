@@ -751,6 +751,23 @@ const api = {
     submit: (data) => request.post('/h5/review/submit', data),
     getSuccessData: (id) => request.get('/h5/review/success', { params: { id } }),
     uploadImage: (formData) => request.post('/file/h5-upload', formData, { headers: { 'Content-Type': 'multipart/form-data' } })
+  },
+
+  complaint: {
+    getPage: (params) => request.get('/complaint/page', { params }),
+    getDetail: (id) => request.get(`/complaint/${id}`),
+    getStaffList: () => request.get('/complaint/staff/list'),
+    accept: (id, data) => request.put(`/complaint/accept/${id}`, data),
+    reject: (id, data) => request.put(`/complaint/reject/${id}`, data),
+    handle: (id, data) => request.put(`/complaint/handle/${id}`, data),
+    visit: (id, data) => request.post(`/complaint/visit/${id}`, data),
+    getVisits: (id) => request.get(`/complaint/${id}/visits`)
+  },
+
+  complaintH5: {
+    getData: (order, code) => request.get('/h5/complaint/data', { params: { order, code } }),
+    submit: (data) => request.post('/h5/complaint/submit', data),
+    getSuccessData: (id) => request.get('/h5/complaint/success', { params: { id } })
   }
 }
 
