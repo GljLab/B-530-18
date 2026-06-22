@@ -729,6 +729,23 @@ const api = {
     getByCheckInId: (checkInId) => request.get(`/review/submission/byCheckIn/${checkInId}`)
   },
 
+  reviewAudit: {
+    getPage: (params) => request.get('/review/audit/page', { params }),
+    getDetail: (id) => request.get(`/review/audit/${id}`),
+    approve: (id) => request.put(`/review/audit/approve/${id}`),
+    reject: (id, data) => request.put(`/review/audit/reject/${id}`, data),
+    hide: (id, data) => request.put(`/review/audit/hide/${id}`, data),
+    reapprove: (id) => request.put(`/review/audit/reapprove/${id}`),
+    reply: (id, data) => request.put(`/review/audit/reply/${id}`, data),
+    editReply: (id, data) => request.put(`/review/audit/reply/edit/${id}`, data)
+  },
+
+  reviewDisplay: {
+    getStatistics: () => request.get('/review/display/statistics'),
+    getRoomTypes: () => request.get('/review/display/roomTypes'),
+    getPage: (params) => request.get('/review/display/page', { params })
+  },
+
   reviewH5: {
     getData: (order, code) => request.get('/h5/review/data', { params: { order, code } }),
     submit: (data) => request.post('/h5/review/submit', data),

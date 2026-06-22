@@ -591,6 +591,18 @@ const routes = [
         name: 'ReviewInvitationManage',
         component: () => import('@/views/review/ReviewInvitationManage.vue'),
         meta: { title: '评价邀请管理', icon: 'Message', permission: 'review:invitation:list' }
+      },
+      {
+        path: 'review/audit',
+        name: 'ReviewAudit',
+        component: () => import('@/views/review/ReviewAudit.vue'),
+        meta: { title: '评价审核', icon: 'CircleCheck', permission: 'review:audit:list' }
+      },
+      {
+        path: 'review/display',
+        name: 'ReviewDisplay',
+        component: () => import('@/views/review/ReviewDisplay.vue'),
+        meta: { title: '客户评价展示', icon: 'ChatDotRound', permission: 'review:display:view' }
       }
     ]
   },
