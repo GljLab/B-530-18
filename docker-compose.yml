@@ -33,6 +33,8 @@ services:
       - ./db/migration_20260622_member_analytics_test_data.sql:/docker-entrypoint-initdb.d/17-migration_20260622_member_analytics_test_data.sql:ro
       - ./db/migration_20260621_review_system.sql:/docker-entrypoint-initdb.d/18-migration_20260621_review_system.sql:ro
       - ./db/migration_20260621_review_submission.sql:/docker-entrypoint-initdb.d/19-migration_20260621_review_submission.sql:ro
+
+      - ./db/migration_20260622_review_audit_display.sql:/docker-entrypoint-initdb.d/20-migration_20260622_review_audit_display.sql:ro
  
 
 

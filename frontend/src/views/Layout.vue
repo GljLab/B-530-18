@@ -521,6 +521,16 @@
             <el-icon><Message /></el-icon>
             <span>评价邀请管理</span>
           </el-menu-item>
+
+          <el-menu-item index="/review/audit" v-if="hasPermission('review:audit:list')">
+            <el-icon><CircleCheck /></el-icon>
+            <span>评价审核</span>
+          </el-menu-item>
+
+          <el-menu-item index="/review/display" v-if="hasPermission('review:display:view')">
+            <el-icon><ChatDotRound /></el-icon>
+            <span>客户评价展示</span>
+          </el-menu-item>
         </el-sub-menu>
       </el-menu>
     </el-aside>
@@ -591,7 +601,7 @@ import {
   Calendar, Search, EditPen, Grid, Monitor, SetUp, Share, List, Money,
   TrendCharts, Timer, Coin, Histogram, Wallet, Ticket, PieChart,
   Stamp, Medal, DataAnalysis,
-  ChatDotRound, Message
+  ChatDotRound, Message, CircleCheck
 } from '@element-plus/icons-vue'
 
 const route = useRoute()
@@ -720,7 +730,9 @@ const hasMemberPermission = computed(() => {
 const hasReviewPermission = computed(() => {
   return hasPermission('review:metric:list') ||
          hasPermission('review:tag:list') ||
-         hasPermission('review:invitation:list')
+         hasPermission('review:invitation:list') ||
+         hasPermission('review:audit:list') ||
+         hasPermission('review:display:view')
 })
 
 const toggleCollapse = () => {

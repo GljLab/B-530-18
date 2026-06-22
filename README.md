@@ -698,7 +698,8 @@ docker compose logs -f
 │   ├── migration_20260622_member_analytics.sql  # 会员数据深度分析（菜单权限）
 │   ├── migration_20260622_member_analytics_test_data.sql  # 会员分析测试数据
 │   ├── migration_20260621_review_system.sql  # 评价系统-指标与模板配置
-│   └── migration_20260621_review_submission.sql  # 评价系统-客户评价提交
+│   ├── migration_20260621_review_submission.sql  # 评价系统-客户评价提交
+│   └── migration_20260622_review_audit_display.sql  # 评价系统-评价审核与展示（菜单权限、状态扩展、测试数据）
 └── docker-compose.yml
 ```
 
