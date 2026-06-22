@@ -768,6 +768,20 @@ const api = {
     getData: (order, code) => request.get('/h5/complaint/data', { params: { order, code } }),
     submit: (data) => request.post('/h5/complaint/submit', data),
     getSuccessData: (id) => request.get('/h5/complaint/success', { params: { id } })
+  },
+
+  reviewAnalytics: {
+    getOverview: () => request.get('/review/analytics/overview'),
+    getQuantityTrend: (months) => request.get('/review/analytics/trend/quantity', { params: { months } }),
+    getScoreTrend: (months) => request.get('/review/analytics/trend/score', { params: { months } }),
+    getMetricRadar: () => request.get('/review/analytics/metric/radar'),
+    getMetricComparison: (periodType) => request.get('/review/analytics/metric/comparison', { params: { periodType } }),
+    getTagStatistics: () => request.get('/review/analytics/tag/statistics'),
+    getTagTrend: (tagId, months) => request.get('/review/analytics/tag/trend', { params: { tagId, months } }),
+    getRoomTypeAnalysis: () => request.get('/review/analytics/roomType/list'),
+    getRoomTypeMetrics: (roomTypeId) => request.get('/review/analytics/roomType/metrics', { params: { roomTypeId } }),
+    getReviewsByScore: (score, pageNum, pageSize) => request.get('/review/analytics/reviews/byScore', { params: { score, pageNum, pageSize } }),
+    getReviewsByRoomType: (roomTypeId, pageNum, pageSize) => request.get('/review/analytics/reviews/byRoomType', { params: { roomTypeId, pageNum, pageSize } })
   }
 }
 

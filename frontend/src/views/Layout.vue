@@ -531,6 +531,33 @@
             <el-icon><ChatDotRound /></el-icon>
             <span>客户评价展示</span>
           </el-menu-item>
+
+          <el-sub-menu index="/review/analytics" v-if="hasPermission('review:analytics:overview') || hasPermission('review:analytics:metric') || hasPermission('review:analytics:tag') || hasPermission('review:analytics:roomType')">
+            <template #title>
+              <el-icon><DataAnalysis /></el-icon>
+              <span>评价数据分析</span>
+            </template>
+
+            <el-menu-item index="/review/analytics/overview" v-if="hasPermission('review:analytics:overview')">
+              <el-icon><DataAnalysis /></el-icon>
+              <span>评价数据总览</span>
+            </el-menu-item>
+
+            <el-menu-item index="/review/analytics/metric" v-if="hasPermission('review:analytics:metric')">
+              <el-icon><DataLine /></el-icon>
+              <span>评价指标分析</span>
+            </el-menu-item>
+
+            <el-menu-item index="/review/analytics/tag" v-if="hasPermission('review:analytics:tag')">
+              <el-icon><PriceTag /></el-icon>
+              <span>评价标签分析</span>
+            </el-menu-item>
+
+            <el-menu-item index="/review/analytics/roomType" v-if="hasPermission('review:analytics:roomType')">
+              <el-icon><Histogram /></el-icon>
+              <span>房型评价分析</span>
+            </el-menu-item>
+          </el-sub-menu>
         </el-sub-menu>
 
         <el-sub-menu index="/complaint" v-if="hasComplaintPermission">
@@ -744,7 +771,13 @@ const hasReviewPermission = computed(() => {
          hasPermission('review:tag:list') ||
          hasPermission('review:invitation:list') ||
          hasPermission('review:audit:list') ||
-         hasPermission('review:display:view')
+         hasPermission('review:display:view') ||
+         hasPermission('review:analytics:overview') ||
+         hasPermission('review:analytics:trend') ||
+         hasPermission('review:analytics:metric') ||
+         hasPermission('review:analytics:tag') ||
+         hasPermission('review:analytics:roomType') ||
+         hasPermission('review:analytics:list')
 })
 
 const hasComplaintPermission = computed(() => {

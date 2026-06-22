@@ -617,6 +617,30 @@ const routes = [
         meta: { title: '客户评价展示', icon: 'ChatDotRound', permission: 'review:display:view' }
       },
       {
+        path: 'review/analytics/overview',
+        name: 'ReviewAnalyticsOverview',
+        component: () => import('@/views/review/ReviewAnalyticsOverview.vue'),
+        meta: { title: '评价数据总览', icon: 'DataAnalysis', permission: 'review:analytics:overview' }
+      },
+      {
+        path: 'review/analytics/metric',
+        name: 'ReviewAnalyticsMetric',
+        component: () => import('@/views/review/ReviewAnalyticsMetric.vue'),
+        meta: { title: '评价指标分析', icon: 'DataLine', permission: 'review:analytics:metric' }
+      },
+      {
+        path: 'review/analytics/tag',
+        name: 'ReviewAnalyticsTag',
+        component: () => import('@/views/review/ReviewAnalyticsTag.vue'),
+        meta: { title: '评价标签分析', icon: 'PriceTag', permission: 'review:analytics:tag' }
+      },
+      {
+        path: 'review/analytics/roomType',
+        name: 'ReviewAnalyticsRoomType',
+        component: () => import('@/views/review/ReviewAnalyticsRoomType.vue'),
+        meta: { title: '房型评价分析', icon: 'Histogram', permission: 'review:analytics:roomType' }
+      },
+      {
         path: 'complaint/list',
         name: 'ComplaintManage',
         component: () => import('@/views/complaint/ComplaintManage.vue'),
