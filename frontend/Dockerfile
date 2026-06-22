@@ -1,5 +1,5 @@
 # 构建阶段
-FROM node:20-alpine AS builder
+FROM node:lts-alpine AS builder
 WORKDIR /app
 
 # 配置npm淘宝镜像源加速

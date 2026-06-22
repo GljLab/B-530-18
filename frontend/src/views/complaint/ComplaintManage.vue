@@ -32,6 +32,11 @@
             style="width: 280px"
           />
         </el-form-item>
+        <el-form-item v-if="hasPermission('complaint:myTask')">
+          <el-checkbox v-model="searchForm.myTask">
+            <el-icon><User /></el-icon>我的投诉任务
+          </el-checkbox>
+        </el-form-item>
         <el-form-item>
           <el-button type="primary" @click="handleSearch">
             <el-icon><Search /></el-icon>搜索
@@ -433,7 +438,7 @@
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Search, Refresh, ChatDotRound } from '@element-plus/icons-vue'
+import { Search, Refresh, ChatDotRound, User } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/user'
 import api from '@/api'
 
@@ -447,7 +452,8 @@ const tableData = ref([])
 const searchForm = reactive({
   keyword: '',
   complaintType: null,
-  dateRange: []
+  dateRange: [],
+  myTask: false
 })
 const pagination = reactive({
   pageNum: 1,
@@ -576,6 +582,7 @@ const loadTableData = async () => {
       complaintType: searchForm.complaintType || undefined,
       startDate: searchForm.dateRange?.[0] || undefined,
       endDate: searchForm.dateRange?.[1] || undefined,
+      myTask: searchForm.myTask || undefined,
       pageNum: pagination.pageNum,
       pageSize: pagination.pageSize
     }
@@ -583,7 +590,13 @@ const loadTableData = async () => {
     if (res.code === 200) {
       tableData.value = res.data.records || []
       pagination.total = res.data.total || 0
+    } else {
+      ElMessage.error(res.message || '获取投诉列表失败')
     }
+  } catch (error) {
+    console.error('获取投诉列表失败:', error)
+    tableData.value = []
+    pagination.total = 0
   } finally {
     tableLoading.value = false
   }
@@ -598,6 +611,7 @@ const handleReset = () => {
   searchForm.keyword = ''
   searchForm.complaintType = null
   searchForm.dateRange = []
+  searchForm.myTask = false
   pagination.pageNum = 1
   loadTableData()
 }

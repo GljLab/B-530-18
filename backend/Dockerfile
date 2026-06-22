@@ -16,7 +16,7 @@ COPY src ./src
 RUN mvn -s /usr/share/maven/ref/settings.xml package -DskipTests -B
 
 # 运行阶段
-FROM eclipse-temurin:17-jre-alpine
+FROM eclipse-temurin:17-jre-jammy
 WORKDIR /app
 
 # 拷贝jar包
